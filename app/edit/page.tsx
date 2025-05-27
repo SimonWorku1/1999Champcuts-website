@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import SlideshowManager from '@/components/SlideshowManager';
+import ServicesManager from '@/components/ServicesManager';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -11,6 +12,40 @@ export default function EditPage() {
   const [aboutMeSaving, setAboutMeSaving] = useState(false);
   const [aboutMeSaved, setAboutMeSaved] = useState(false);
   const [aboutMeError, setAboutMeError] = useState<string | null>(null);
+  const [isFading, setIsFading] = useState(false);
+
+  // Add auto-fade for saved message
+  useEffect(() => {
+    if (aboutMeSaved) {
+      const fadeTimer = setTimeout(() => {
+        setIsFading(true);
+      }, 3500); // Start fading 3.5 seconds in
+
+      const hideTimer = setTimeout(() => {
+        setAboutMeSaved(false);
+        setIsFading(false);
+      }, 4000); // Hide completely after 4 seconds
+
+      return () => {
+        clearTimeout(fadeTimer);
+        clearTimeout(hideTimer);
+      };
+    }
+  }, [aboutMeSaved]);
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const adjustTextareaHeight = () => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+  };
+
+  useEffect(() => {
+    adjustTextareaHeight();
+  }, [aboutMe]);
 
   useEffect(() => {
     const fetchAboutMe = async () => {
@@ -65,6 +100,11 @@ export default function EditPage() {
               <SlideshowManager />
             </div>
             <div>
+              <h2 className="text-2xl font-semibold mb-4">Services Management</h2>
+              <p className="text-gray-600 mb-4">Manage your haircutting services and their associated media.</p>
+              <ServicesManager />
+            </div>
+            <div>
               <h2 className="text-2xl font-semibold mb-4">Edit About Me</h2>
               <p className="text-gray-600 mb-4">Edit the About Me section for the homepage.</p>
               {aboutMeLoading ? (
@@ -72,16 +112,22 @@ export default function EditPage() {
               ) : (
                 <>
                   <textarea
-                    className="w-full min-h-[120px] p-3 border border-gray-300 rounded-lg mb-2"
+                    ref={textareaRef}
+                    className="w-full min-h-[120px] p-3 border border-gray-300 rounded-lg mb-2 resize-none overflow-hidden"
                     value={aboutMe}
                     onChange={e => setAboutMe(e.target.value)}
                     disabled={aboutMeSaving}
+                    onInput={adjustTextareaHeight}
                   />
                   <div className="flex items-center gap-4">
                     <Button onClick={saveAboutMe} disabled={aboutMeSaving}>
                       {aboutMeSaving ? 'Saving...' : 'Save'}
                     </Button>
-                    {aboutMeSaved && <span className="text-green-600">Saved!</span>}
+                    {aboutMeSaved && (
+                      <span className={`text-green-600 transition-opacity duration-300 ease-in-out ${isFading ? 'opacity-0' : 'opacity-100'}`}>
+                        Saved!
+                      </span>
+                    )}
                     {aboutMeError && <span className="text-red-500">{aboutMeError}</span>}
                   </div>
                 </>

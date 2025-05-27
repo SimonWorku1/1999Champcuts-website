@@ -14,24 +14,38 @@ const videos = [
   { src: "/videos/eric.mov", title: "Video 5" }
 ]
 
-const services = [
-  { name: "Full Package", price: "$70", duration: "1 hour" },
-  { name: "Haircut And Beard", price: "$50", duration: "1 hour" },
-  { name: "Adults Haircut", price: "$40", duration: "1 hour" },
-  { name: "Kids", price: "$35", duration: "1 hour" },
-  { name: "Beard Only", price: "$25", duration: "15 minutes" },
-  { name: "Eyebrows", price: "$10", duration: "10 minutes" },
-  { name: "Early Morning", price: "$80", duration: "1 hour", premium: true },
-  { name: "After Hours", price: "$100", duration: "1 hour", premium: true },
-  { name: "Christmas And New Year Haircut", price: "$80", duration: "1 hour" },
-  { name: "Christmas And New Year Haircut + Beard", price: "$100", duration: "1 hour" },
-]
-
+interface Service {
+  id: string;
+  name: string;
+  price: string;
+  duration: string;
+  premium?: boolean;
+  mediaUrl?: string;
+  mediaType?: 'image' | 'video';
+}
 
 export default function Home() {
   const [builderContent, setBuilderContent] = useState(null);
+  const [services, setServices] = useState<Service[]>([]);
+  const [servicesLoading, setServicesLoading] = useState(true);
 
   useEffect(() => {
+    // Fetch services from the API
+    const fetchServices = async () => {
+      setServicesLoading(true);
+      try {
+        const res = await fetch('/api/services');
+        if (!res.ok) throw new Error('Failed to fetch services');
+        const data = await res.json();
+        setServices(data.services || []);
+      } catch (err) {
+        console.error('Error fetching services:', err);
+      } finally {
+        setServicesLoading(false);
+      }
+    };
+
+    fetchServices();
   }, []);
 
   const [current, setCurrent] = useState(0)
