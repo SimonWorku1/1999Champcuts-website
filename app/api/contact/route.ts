@@ -15,7 +15,7 @@ export async function POST(request: Request) {
   try {
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
-      to: 'info@1999champcutz.com', // Changed recipient email address back
+      to: 'info@1999champcutz.com', // Your email address
       subject: `New message from ${name}`,
       text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
     });
@@ -25,4 +25,4 @@ export async function POST(request: Request) {
     console.error('Error sending email:', error);
     return NextResponse.json({ success: false, error: 'Failed to send message' }, { status: 500 });
   }
-} 
+}
