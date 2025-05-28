@@ -380,7 +380,32 @@ export default function Home() {
             </div>
 
             <div className="w-full md:w-1/2">
-              <form className="bg-white dark:bg-zinc-900 p-8 rounded-lg shadow-lg">
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  const data = {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    message: formData.get('message'),
+                  };
+
+                  const response = await fetch('/api/contact', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                  });
+
+                  if (response.ok) {
+                    alert('Message sent successfully!');
+                  } else {
+                    alert('Failed to send message. Please try again.');
+                  }
+                }}
+                className="bg-white dark:bg-zinc-900 p-8 rounded-lg shadow-lg"
+              >
                 <h3 className="text-2xl font-bold mb-6">Send Us a Message</h3>
                 <div className="space-y-4">
                   <div>
@@ -390,6 +415,7 @@ export default function Home() {
                     <input
                       type="text"
                       id="name"
+                      name="name"
                       className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-md bg-transparent"
                       placeholder="Your name"
                     />
@@ -401,6 +427,7 @@ export default function Home() {
                     <input
                       type="email"
                       id="email"
+                      name="email"
                       className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-md bg-transparent"
                       placeholder="Your email"
                     />
@@ -411,12 +438,13 @@ export default function Home() {
                     </label>
                     <textarea
                       id="message"
+                      name="message"
                       rows={5}
                       className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-md bg-transparent"
                       placeholder="Your message"
                     ></textarea>
                   </div>
-                  <Button className="w-full bg-accent hover:bg-accent/90 text-white py-3">SEND MESSAGE</Button>
+                  <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-white py-3">SEND MESSAGE</Button>
                 </div>
               </form>
             </div>
