@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils"
 import { TestimonialCard, TestimonialAuthor } from "@/components/ui/testimonial-card"
+import React, { useRef, useEffect, useState, useLayoutEffect } from 'react';
 
 interface TestimonialsSectionProps {
   title: string
@@ -18,6 +19,69 @@ export function TestimonialsSection({
   testimonials,
   className 
 }: TestimonialsSectionProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    console.log('useEffect running');
+    const container = containerRef.current;
+    if (!container) {
+      console.log('Container ref is null');
+      return;
+    }
+
+    let animationFrameId: number | null = null;
+    let totalScrolled = 0;
+    const scrollSpeed = 2; // Adjust scroll speed as needed
+    const totalLoops = 30;
+    let completedLoops = 0;
+    let loopDistance = 0; // Will be calculated after layout settles
+
+    const scroll = () => {
+      if (!container) return;
+
+      console.log('Before scrollLeft:', container.scrollLeft);
+      container.scrollLeft += scrollSpeed;
+      console.log('After scrollLeft increment:', container.scrollLeft);
+      
+      // Check if we've scrolled past the first set of testimonials (one loop)
+      if (container.scrollLeft >= loopDistance) {
+        container.scrollLeft -= loopDistance; // Reset scroll position to the beginning of the second set
+        completedLoops++;
+      }
+
+      // Stop animation after completing totalLoops
+      if (completedLoops >= totalLoops) {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+        }
+        return; // Stop animation
+      }
+
+      animationFrameId = requestAnimationFrame(scroll);
+    };
+
+    // Start the animation after ensuring layout calculation is done
+    const timeoutId = setTimeout(() => {
+      console.log('setTimeout running');
+      // Recalculate loopDistance more reliably after a short delay
+      if (containerRef.current) {
+        loopDistance = containerRef.current.scrollWidth / 2;
+        console.log('Calculated loopDistance:', loopDistance);
+        console.log('container.scrollWidth:', containerRef.current.scrollWidth);
+        console.log('container.clientWidth:', containerRef.current.clientWidth);
+      }
+      // Start the animation regardless, relying on loopDistance for resetting
+      animationFrameId = requestAnimationFrame(scroll);
+    }, 100); // Give a little time for layout to settle
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+      clearTimeout(timeoutId);
+    };
+  }, [testimonials]); // Rerun effect if testimonials change
+
   return (
     <section className={cn(
       "bg-background text-foreground",
@@ -34,8 +98,8 @@ export function TestimonialsSection({
           </p>
         </div>
 
-        <div className="relative flex w-full flex-col items-center justify-center overflow-hidden">
-          <div className="flex min-w-[200%] gap-8 animate-marquee">
+        <div className="relative flex w-full flex-col items-center justify-center overflow-x-auto">
+          <div ref={containerRef} className="flex min-w-[200%] gap-8">
             {[...testimonials, ...testimonials].map((testimonial, i) => (
               <TestimonialCard key={i} {...testimonial} />
             ))}

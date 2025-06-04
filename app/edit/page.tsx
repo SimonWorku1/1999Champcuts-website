@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import SlideshowManager from '@/components/SlideshowManager';
 import ServicesManager from '@/components/ServicesManager';
+import AboutFeaturesManager from '@/components/AboutFeaturesManager';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -93,8 +94,8 @@ export default function EditPage() {
             </Link>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-6">Edit Section</h1>
-          <div className="space-y-8">
             <div>
+            <div className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">Slideshow Management</h2>
               <p className="text-gray-600 mb-4">Upload, reorder, or delete media for the homepage slideshow.</p>
               <SlideshowManager />
@@ -119,7 +120,7 @@ export default function EditPage() {
                     disabled={aboutMeSaving}
                     onInput={adjustTextareaHeight}
                   />
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 pb-6">
                     <Button onClick={saveAboutMe} disabled={aboutMeSaving}>
                       {aboutMeSaving ? 'Saving...' : 'Save'}
                     </Button>
@@ -134,6 +135,18 @@ export default function EditPage() {
               )}
             </div>
           </div>
+          {/* About Me Features Section */}
+          <section id="edit-about-features" className="w-full">
+            <div className="container mx-auto px-4">
+              <AboutFeaturesManager />
+            </div>
+          </section>
+          {/* Services Section */}
+          <section id="edit-services" className="w-full py-12 bg-zinc-100 dark:bg-zinc-800">
+            <div className="container mx-auto px-4">
+              {/* Services content */}
+            </div>
+          </section>
         </div>
       </div>
     </div>

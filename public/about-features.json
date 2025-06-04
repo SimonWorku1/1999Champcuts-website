@@ -1,0 +1,17 @@
+[
+  {
+    "icon": "Scissors",
+    "title": "Expert Barbers",
+    "description": "Our team has years of experience and continuous training"
+  },
+  {
+    "icon": "Calendar",
+    "title": "Easy Booking",
+    "description": "Book your appointment today!"
+  },
+  {
+    "icon": "MapPin",
+    "title": "Prime Location",
+    "description": "Conveniently located in the heart of Contra Costa."
+  }
+]

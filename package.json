@@ -10,6 +10,9 @@
   },
   "dependencies": {
     "@builder.io/react": "^8.2.0",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@radix-ui/react-avatar": "^1.0.4",
     "@types/node": "^20.11.24",
     "@types/react": "^18.2.61",
@@ -18,6 +21,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.0",
     "contentful": "^11.5.23",
+    "firebase": "^11.8.1",
     "formidable": "^3.5.4",
     "framer-motion": "^11.0.8",
     "lucide-react": "^0.511.0",

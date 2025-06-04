@@ -101,6 +101,8 @@ export default function Home() {
 
   const [aboutMe, setAboutMe] = useState('');
   const [aboutMeLoading, setAboutMeLoading] = useState(true);
+  const [aboutFeatures, setAboutFeatures] = useState<Array<{ icon: string; title: string; description: string }>>([]);
+  const [aboutFeaturesLoading, setAboutFeaturesLoading] = useState(true);
 
   useEffect(() => {
     fetch('/about-me.json')
@@ -108,6 +110,23 @@ export default function Home() {
       .then(data => setAboutMe(data.text || ''))
       .catch(() => setAboutMe(''))
       .finally(() => setAboutMeLoading(false));
+
+    // Fetch about features
+    const fetchAboutFeatures = async () => {
+      setAboutFeaturesLoading(true);
+      try {
+        const res = await fetch('/api/about-features');
+        if (!res.ok) throw new Error('Failed to fetch about features');
+        const data = await res.json();
+        setAboutFeatures(data.features || []);
+      } catch (err) {
+        console.error('Error fetching about features:', err);
+      } finally {
+        setAboutFeaturesLoading(false);
+      }
+    };
+
+    fetchAboutFeatures();
   }, []);
 
   return (
@@ -219,8 +238,28 @@ export default function Home() {
             {services.map((service, index) => (
               <div
                 key={index}
-                className="bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition group"
+                className="bg-zinc-100 dark:bg-zinc-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition group relative min-h-[250px]"
               >
+                {service.mediaUrl && (
+                  <div className="relative w-full h-48">
+                    {service.mediaType === 'video' ? (
+                      <video
+                        src={service.mediaUrl}
+                        className="w-full h-full object-cover"
+                        controls={false}
+                        autoPlay
+                        muted
+                        loop
+                      />
+                    ) : (
+                      <img
+                        src={service.mediaUrl}
+                        alt={service.name}
+                        className="w-full h-full object-cover"
+                      />
+                    )}
+                  </div>
+                )}
                 <div className="p-6">
                   <h3 className="text-xl font-bold mb-2">{service.name}</h3>
                   <div className="flex items-center mb-2">
@@ -229,15 +268,19 @@ export default function Home() {
                   </div>
                   <div className="flex justify-between items-center mt-4">
                     <span className="text-2xl font-bold">{service.price}</span>
-                    {service.premium && (
-                      <span className="ml-2 px-3 py-1 bg-blue-700 text-white text-xs rounded-full font-semibold">
-                        PREMIUM HOURS
-                      </span>
-                    )}
-                    <Button variant="outline" className="border-accent text-accent hover:bg-accent hover:text-white">
-                      Book
-                    </Button>
                   </div>
+                </div>
+                <div className="absolute bottom-0 right-0 p-4 flex flex-col items-end">
+                  {service.premium && (
+                    <span className="px-3 py-1 bg-blue-700 text-white text-xs rounded-full font-semibold mb-2">
+                      PREMIUM HOURS
+                    </span>
+                  )}
+                  <Button
+                    className="bg-transparent hover:bg-accent text-accent hover:text-primary border-2 border-accent hover:border-accent/90 font-bold py-2 px-6 rounded-full text-sm shadow-md transition"
+                  >
+                    BOOK NOW
+                  </Button>
                 </div>
               </div>
             ))}
@@ -268,30 +311,23 @@ export default function Home() {
               ) : (
                 <p className="text-lg mb-6 whitespace-pre-line">{aboutMe}</p>
               )}
-              <div className="space-y-4 mb-8">
-                <div className="flex items-start">
-                  <Scissors className="w-6 h-6 text-accent mr-4 mt-1" />
-                  <div>
-                    <h3 className="font-bold text-lg">Expert Barbers</h3>
-                    <p>Our team has years of experience and continuous training</p>
-                  </div>
+              {aboutFeaturesLoading ? (
+                <div>Loading features...</div>
+              ) : (
+                <div className="space-y-4 mb-8">
+                  {aboutFeatures.map((feature, index) => (
+                    <div key={index} className="flex items-start">
+                      {feature.icon === 'Scissors' && <Scissors className="w-6 h-6 text-accent mr-4 mt-1" />}
+                      {feature.icon === 'Calendar' && <Calendar className="w-6 h-6 text-accent mr-4 mt-1" />}
+                      {feature.icon === 'MapPin' && <MapPin className="flex-shrink-0 w-6 h-6 mr-3 text-accent" />}
+                      <div>
+                        <h3 className="font-bold text-lg">{feature.title}</h3>
+                        <p>{feature.description}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="flex items-start">
-                  <Calendar className="w-6 h-6 text-accent mr-4 mt-1" />
-                  <div>
-                    <h3 className="font-bold text-lg">Easy Booking</h3>
-                    <p>Book your appointment today!</p>
-                  </div>
-                </div>
-                <div className="flex items-start">
-                  <MapPin className="w-6 h-6 text-accent mr-4 mt-1" />
-                  <div>
-                    <h3 className="font-bold text-lg">Prime Location</h3>
-                    <p>Conveniently located in the heart of Contra Costa.</p>
-                  </div>
-                </div>
-              </div>
-              <Button className="bg-accent hover:bg-accent/90 text-white">LEARN MORE</Button>
+              )}
             </div>
           </div>
         </div>

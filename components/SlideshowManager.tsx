@@ -1,8 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Trash2, ArrowUp, ArrowDown, Upload, GripVertical, X } from 'lucide-react';
+import { DndContext, closestCorners, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { Plus } from 'lucide-react';
 
 interface Slide {
   id: string;
@@ -11,218 +15,311 @@ interface Slide {
   type: 'video' | 'image';
 }
 
-export default function SlideshowManager() {
+interface SlideshowManagerProps {
+  // Define any props if needed
+}
+
+export default function SlideshowManager(props: SlideshowManagerProps) {
   const [slides, setSlides] = useState<Slide[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [draggedItem, setDraggedItem] = useState<number | null>(null);
   const [previewSlide, setPreviewSlide] = useState<Slide | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [slideshowOrderSaved, setSlideshowOrderSaved] = useState(false);
+  const [isSlideshowFading, setIsSlideshowFading] = useState(false);
 
-  // Fetch videos from the API
-  const fetchVideos = async () => {
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const fetchSlides = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/videos');
-      if (!res.ok) throw new Error('Failed to fetch videos');
-      const data = await res.json();
-      const videoSlides: Slide[] = (data.videos || []).map((v: any, idx: number) => ({
-        id: v.filename,
-        src: v.url,
-        title: v.filename,
-        type: 'video',
-      }));
-      setSlides(videoSlides);
-      localStorage.setItem('slideshow', JSON.stringify(videoSlides));
+      const [slidesRes, orderRes] = await Promise.all([
+        fetch('/api/slideshow'),
+        fetch('/api/slideshow-order') // Fetch the saved order
+      ]);
+
+      if (!slidesRes.ok) throw new Error('Failed to fetch slides');
+      const slidesData = await slidesRes.json();
+      const fetchedSlides: Slide[] = slidesData.slides || [];
+
+      let orderedSlides = fetchedSlides;
+      if (orderRes.ok) {
+        const orderData = await orderRes.json();
+        const savedOrder: string[] = orderData.order || [];
+        // Reorder slides based on saved order
+        if (savedOrder.length > 0) {
+          const slidesMap = new Map(fetchedSlides.map(slide => [slide.id, slide]));
+          orderedSlides = savedOrder
+            .map(id => slidesMap.get(id))
+            .filter((slide): slide is Slide => slide !== undefined);
+          // Add any new slides that might not be in the saved order to the end
+          const orderedIds = new Set(orderedSlides.map(slide => slide.id));
+          fetchedSlides.forEach(slide => {
+            if (!orderedIds.has(slide.id)) {
+              orderedSlides.push(slide);
+            }
+          });
+        }
+      }
+      
+      setSlides(orderedSlides);
+
     } catch (err) {
-      setError('Could not load videos.');
-      console.error('Error fetching videos:', err);
+      setError('Could not load slideshow items.');
+      console.error('Error fetching slideshow:', err);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchVideos();
+    fetchSlides();
   }, []);
-
-  const saveSlides = (newSlides: Slide[]) => {
-    localStorage.setItem('slideshow', JSON.stringify(newSlides));
-    setSlides(newSlides);
-  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files) return;
+    if (!files || files.length === 0) return;
+
     setUploading(true);
+    const formData = new FormData();
     for (const file of Array.from(files)) {
-      if (!file.type.startsWith('video/')) continue;
-      const formData = new FormData();
-      formData.append('file', file);
-      await fetch('/api/upload', {
+      formData.append('files', file);
+    }
+
+    try {
+      const res = await fetch('/api/upload-slideshow-media', {
         method: 'POST',
         body: formData,
       });
-    }
-    setUploading(false);
-    await fetchVideos();
-  };
-
-  const moveSlide = (index: number, direction: 'up' | 'down') => {
-    const newSlides = [...slides];
-    const newIndex = direction === 'up' ? index - 1 : index + 1;
-    if (newIndex >= 0 && newIndex < slides.length) {
-      [newSlides[index], newSlides[newIndex]] = [newSlides[newIndex], newSlides[index]];
-      saveSlides(newSlides);
+      if (!res.ok) throw new Error('Failed to upload files');
+      await fetchSlides(); // Refresh the list including the new file(s)
+    } catch (err) {
+      console.error('Error uploading files:', err);
+      setError('Could not upload files.');
+    } finally {
+      setUploading(false);
     }
   };
 
-  const deleteSlide = async (index: number) => {
-    const filename = slides[index]?.title;
-    if (!filename) return;
+  const deleteSlide = async (id: string) => {
     try {
-      await fetch('/api/delete-video', {
+      const res = await fetch(`/api/slideshow/${id}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) throw new Error('Failed to delete slide');
+      // Optimistically remove the slide
+      setSlides(prevSlides => prevSlides.filter(slide => slide.id !== id));
+      // Also remove from saved order if it exists
+      await saveOrder(slides.filter(slide => slide.id !== id).map(slide => slide.id));
+    } catch (err) {
+      console.error('Error deleting slide:', err);
+      setError('Could not delete slide.');
+      fetchSlides(); // Refetch if optimistic update fails
+    }
+  };
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (active.id !== over?.id) {
+      setSlides((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over?.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  }, []);
+
+  const moveSlide = (id: string, direction: 'up' | 'down') => {
+    setSlides(prevSlides => {
+      const newSlides = [...prevSlides];
+      const index = newSlides.findIndex(slide => slide.id === id);
+      if (index === -1) return newSlides; // Should not happen
+
+      const newIndex = direction === 'up' ? index - 1 : index + 1;
+
+      if (newIndex >= 0 && newIndex < newSlides.length) {
+        [newSlides[index], newSlides[newIndex]] = [newSlides[newIndex], newSlides[index]];
+        return newSlides;
+      }
+
+      return newSlides; // No change if move is out of bounds
+    });
+  };
+
+  const saveOrder = async (currentOrder?: string[]) => {
+    const orderToSave = currentOrder || slides.map(slide => slide.id);
+    try {
+      const res = await fetch('/api/slideshow-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filename }),
+        body: JSON.stringify({ order: orderToSave }),
       });
-      await fetchVideos();
+      if (!res.ok) throw new Error('Failed to save order');
+      console.log('Slideshow order saved!');
+      setSlideshowOrderSaved(true);
     } catch (err) {
-      console.error('Error deleting video:', err);
+      console.error('Error saving order:', err);
+      setError('Could not save order.');
     }
   };
 
-  const handleDragStart = (index: number) => {
-    setDraggedItem(index);
-  };
+  // Add auto-fade for saved message
+  useEffect(() => {
+    if (slideshowOrderSaved) {
+      const fadeTimer = setTimeout(() => {
+        setIsSlideshowFading(true);
+      }, 3500); // Start fading 3.5 seconds in
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-  };
+      const hideTimer = setTimeout(() => {
+        setSlideshowOrderSaved(false);
+        setIsSlideshowFading(false);
+      }, 4000); // Hide completely after 4 seconds
 
-  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
-    e.preventDefault();
-    if (draggedItem === null) return;
-    const newSlides = [...slides];
-    const draggedSlide = newSlides[draggedItem];
-    newSlides.splice(draggedItem, 1);
-    newSlides.splice(dropIndex, 0, draggedSlide);
-    saveSlides(newSlides);
-    setDraggedItem(null);
-  };
+      return () => {
+        clearTimeout(fadeTimer);
+        clearTimeout(hideTimer);
+      };
+    }
+  }, [slideshowOrderSaved]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div>Loading slideshow...</div>;
   }
+
   if (error) {
     return <div className="text-red-500 font-bold">{error}</div>;
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <label className="flex items-center gap-2 cursor-pointer bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent/90">
-          <Upload className="w-5 h-5" />
-          <span>{uploading ? 'Uploading...' : 'Upload Media'}</span>
-          <input
-            type="file"
-            multiple
-            accept="video/*"
-            onChange={handleFileUpload}
-            className="hidden"
-            disabled={uploading}
-          />
-        </label>
-      </div>
-
-      <div className="space-y-4">
-        {slides.map((slide, index) => (
-          <div
-            key={slide.id}
-            draggable
-            onDragStart={() => handleDragStart(index)}
-            onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, index)}
-            className={`flex items-center gap-4 p-4 bg-white rounded-lg shadow cursor-move transition-all ${
-              draggedItem === index ? 'opacity-50' : ''
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <GripVertical className="w-5 h-5 text-gray-400" />
-              <div 
-                className="w-24 h-24 relative cursor-pointer"
-                onClick={() => setPreviewSlide(slide)}
-              >
-                {slide.type === 'video' ? (
-                  <video
-                    src={slide.src}
-                    className="w-full h-full object-cover rounded"
-                  />
-                ) : null}
-              </div>
-            </div>
-            <div className="flex-1">
-              <p className="font-medium">{slide.title}</p>
-              <p className="text-sm text-gray-500">{slide.type}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => moveSlide(index, 'up')}
-                disabled={index === 0}
-              >
-                <ArrowUp className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => moveSlide(index, 'down')}
-                disabled={index === slides.length - 1}
-              >
-                <ArrowDown className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => deleteSlide(index)}
-                className="bg-red-500 hover:bg-red-600 text-white"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Preview Modal */}
-      {previewSlide && (
-        <div 
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 min-h-screen w-full"
-          onClick={() => setPreviewSlide(null)}
-        >
-          <div 
-            className="relative max-w-2xl w-full mx-4 overflow-hidden shadow-2xl flex items-center justify-center"
-            onClick={e => e.stopPropagation()}
-          >
-            <button
-              className="absolute top-4 right-4 text-white hover:text-gray-300 bg-black/50 rounded-full p-1 hover:bg-black/70 transition-colors z-10"
-              onClick={() => setPreviewSlide(null)}
-            >
-              <X className="w-6 h-6" />
-            </button>
-            {previewSlide.type === 'video' ? (
-              <video
-                src={previewSlide.src}
-                className="w-full max-w-xl max-h-[80vh] rounded-[3rem] object-cover mx-auto"
-                controls
-                autoPlay
-              />
-            ) : null}
-          </div>
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold">Slideshow Items</h3>
+        <div className="flex items-center gap-4">
+          {/* Add Save Order Button */}
+          <Button onClick={() => saveOrder()} className="bg-green-500 hover:bg-green-600 text-white">
+             Save
+           </Button>
+           {slideshowOrderSaved && (
+             <span className={`text-green-600 transition-opacity duration-300 ease-in-out ${isSlideshowFading ? 'opacity-0' : 'opacity-100'}`}>
+               Saved!
+             </span>
+           )}
+          <label className="flex items-center gap-2 cursor-pointer bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent/90">
+            <Upload className="w-4 h-4" />
+            <span>{uploading ? 'Uploading...' : 'Upload Files'}</span>
+            <input
+              type="file"
+              accept="image/*,video/*"
+              multiple
+              onChange={handleFileUpload}
+              className="hidden"
+              disabled={uploading}
+            />
+          </label>
         </div>
-      )}
+      </div>
+
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCorners}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={slides.map(slide => slide.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="space-y-4">
+            {slides.map(slide => (
+              <SortableItem key={slide.id} id={slide.id} slide={slide} onDelete={deleteSlide} moveSlide={moveSlide} />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
+    </div>
+  );
+}
+
+interface SortableItemProps {
+  id: string;
+  slide: Slide;
+  onDelete: (id: string) => void;
+  moveSlide: (id: string, direction: 'up' | 'down') => void;
+}
+
+function SortableItem({ id, slide, onDelete, moveSlide }: SortableItemProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id, disabled: false });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 10 : 0,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="relative bg-white rounded-lg shadow overflow-hidden flex items-center gap-4 p-4"
+    >
+      {/* Drag Handle */}
+      <div
+        className="cursor-grab touch-action-none p-2"
+        {...listeners}
+        {...attributes}
+      >
+        <GripVertical className="w-6 h-6 text-gray-400" />
+      </div>
+
+      <div className="w-48 h-32 relative rounded overflow-hidden">
+        {slide.type === 'video' ? (
+          <video src={slide.src} className="w-full h-full object-cover" controls={false} autoPlay muted loop />
+        ) : (
+          <img src={slide.src} alt={slide.title} className="w-full h-full object-cover" />
+        )}
+      </div>
+      <div className="flex-1 flex justify-between items-center">
+        <p className="font-medium truncate">{slide.title}</p>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              console.log('Move up clicked for', id);
+              moveSlide(slide.id, 'up');
+            }}
+            className="p-1 rounded-full hover:bg-accent hover:text-white transition-colors"
+            aria-label="Move slide up"
+          >
+            <ArrowUp className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => {
+              console.log('Move down clicked for', id);
+              moveSlide(slide.id, 'down');
+            }}
+            className="p-1 rounded-full hover:bg-accent hover:text-white transition-colors"
+            aria-label="Move slide down"
+          >
+            <ArrowDown className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => {
+              console.log('Delete clicked for', id);
+              onDelete(slide.id);
+            }}
+            className="p-1 bg-red-500 bg-opacity-75 rounded-full text-white hover:bg-red-600 hover:bg-opacity-100"
+            aria-label="Delete slide"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
     </div>
   );
 } 
