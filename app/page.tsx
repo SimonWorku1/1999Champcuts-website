@@ -271,16 +271,16 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="absolute bottom-0 right-0 p-4 flex flex-col items-end">
-                  {service.premium && (
+                    {service.premium && (
                     <span className="px-3 py-1 bg-blue-700 text-white text-xs rounded-full font-semibold mb-2">
-                      PREMIUM HOURS
-                    </span>
-                  )}
+                        PREMIUM HOURS
+                      </span>
+                    )}
                   <Button
                     className="bg-transparent hover:bg-accent text-accent hover:text-primary border-2 border-accent hover:border-accent/90 font-bold py-2 px-6 rounded-full text-sm shadow-md transition"
                   >
                     BOOK NOW
-                  </Button>
+                    </Button>
                 </div>
               </div>
             ))}
@@ -314,17 +314,17 @@ export default function Home() {
               {aboutFeaturesLoading ? (
                 <div>Loading features...</div>
               ) : (
-                <div className="space-y-4 mb-8">
+              <div className="space-y-4 mb-8">
                   {aboutFeatures.map((feature, index) => (
                     <div key={index} className="flex items-start">
                       {feature.icon === 'Scissors' && <Scissors className="w-6 h-6 text-accent mr-4 mt-1" />}
                       {feature.icon === 'Calendar' && <Calendar className="w-6 h-6 text-accent mr-4 mt-1" />}
                       {feature.icon === 'MapPin' && <MapPin className="flex-shrink-0 w-6 h-6 mr-3 text-accent" />}
-                      <div>
+                  <div>
                         <h3 className="font-bold text-lg">{feature.title}</h3>
                         <p>{feature.description}</p>
-                      </div>
-                    </div>
+                  </div>
+                </div>
                   ))}
                 </div>
               )}

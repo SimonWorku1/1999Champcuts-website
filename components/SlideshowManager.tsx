@@ -145,7 +145,7 @@ export default function SlideshowManager(props: SlideshowManagerProps) {
       const newIndex = direction === 'up' ? index - 1 : index + 1;
 
       if (newIndex >= 0 && newIndex < newSlides.length) {
-        [newSlides[index], newSlides[newIndex]] = [newSlides[newIndex], newSlides[index]];
+      [newSlides[index], newSlides[newIndex]] = [newSlides[newIndex], newSlides[index]];
         return newSlides;
       }
 
@@ -201,7 +201,7 @@ export default function SlideshowManager(props: SlideshowManagerProps) {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Slideshow Items</h3>
-        <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4">
           {/* Add Save Order Button */}
           <Button onClick={() => saveOrder()} className="bg-green-500 hover:bg-green-600 text-white">
              Save
@@ -211,20 +211,20 @@ export default function SlideshowManager(props: SlideshowManagerProps) {
                Saved!
              </span>
            )}
-          <label className="flex items-center gap-2 cursor-pointer bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent/90">
+        <label className="flex items-center gap-2 cursor-pointer bg-accent text-white px-4 py-2 rounded-lg hover:bg-accent/90">
             <Upload className="w-4 h-4" />
             <span>{uploading ? 'Uploading...' : 'Upload Files'}</span>
-            <input
-              type="file"
+          <input
+            type="file"
               accept="image/*,video/*"
-              multiple
-              onChange={handleFileUpload}
-              className="hidden"
-              disabled={uploading}
-            />
-          </label>
-        </div>
+            multiple
+            onChange={handleFileUpload}
+            className="hidden"
+            disabled={uploading}
+          />
+        </label>
       </div>
+              </div>
 
       <DndContext
         sensors={sensors}
@@ -234,7 +234,7 @@ export default function SlideshowManager(props: SlideshowManagerProps) {
         <SortableContext
           items={slides.map(slide => slide.id)}
           strategy={verticalListSortingStrategy}
-        >
+              >
           <div className="space-y-4">
             {slides.map(slide => (
               <SortableItem key={slide.id} id={slide.id} slide={slide} onDelete={deleteSlide} moveSlide={moveSlide} />
@@ -308,16 +308,16 @@ function SortableItem({ id, slide, onDelete, moveSlide }: SortableItemProps) {
           >
             <ArrowDown className="w-5 h-5" />
           </button>
-          <button
+            <button
             onClick={() => {
               console.log('Delete clicked for', id);
               onDelete(slide.id);
             }}
             className="p-1 bg-red-500 bg-opacity-75 rounded-full text-white hover:bg-red-600 hover:bg-opacity-100"
             aria-label="Delete slide"
-          >
+            >
             <Trash2 className="w-5 h-5" />
-          </button>
+            </button>
         </div>
       </div>
     </div>

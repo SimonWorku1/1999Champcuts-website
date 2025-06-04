@@ -10,7 +10,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyC3zkOqA5dCyhzgtHHXK8df-2LMhoED2mA",
   authDomain: "champcuts-1eb3a.firebaseapp.com",
   projectId: "champcuts-1eb3a",
-  storageBucket: "champcuts-1eb3a.firebaseatorage.app",
+  storageBucket: "champcuts-1eb3a.firebasestorage.app",
   messagingSenderId: "882795075650",
   appId: "1:882795075650:web:582e36475f8f9b9c7a35db",
   measurementId: "G-LXHXNRMCZP"
