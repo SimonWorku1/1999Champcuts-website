@@ -21,8 +21,6 @@ export default function EditPage() {
 
   const allowedEmail = 'simonworku410@gmail.com'; // The specific email allowed access
 
-  // Effect to handle Google Sign-in after redirect (not needed for popup, but keeping auth listener)
-
   // Effect to listen for auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
