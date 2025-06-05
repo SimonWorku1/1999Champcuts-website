@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Trash2, Upload, Plus, X, Clock, Edit2 } from 'lucide-react';
-import { DndContext, SortableContext } from '@dnd-kit/core';
+import { DndContext } from '@dnd-kit/core';
+import { SortableContext } from '@dnd-kit/sortable';
 
 interface Service {
   id: string;
