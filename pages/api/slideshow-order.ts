@@ -1,18 +1,30 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { initializeApp, applicationDefault } from 'firebase-admin/app';
+import { initializeApp, applicationDefault, getApps, getApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import path from 'path'; // Keep path and fs if needed for migration
 import fs from 'fs';
 
 // Initialize Firebase Admin SDK if not already initialized
-if (!initializeApp.length) {
-  initializeApp({
-    credential: applicationDefault(),
-    // No storageBucket needed for order
-  });
+// Use getApps().length to check if an app is already initialized
+// Use getApp() with a try-catch to check for the default app specifically
+let firebaseAdminApp;
+
+try {
+  firebaseAdminApp = getApp();
+} catch (e: any) {
+  if (e.code === 'app/no-app') {
+    firebaseAdminApp = initializeApp({
+      credential: applicationDefault(),
+      // No storageBucket needed for order
+    });
+  } else {
+    console.error('Error getting Firebase app:', e);
+    // Re-throw or handle as appropriate
+    throw e;
+  }
 }
 
-const db = getFirestore();
+const db = getFirestore(firebaseAdminApp);
 const orderDocRef = db.collection('settings').doc('slideshowOrder');
 
 // const orderPath = path.join(process.cwd(), 'public/slideshow-order.json'); // Old local order path

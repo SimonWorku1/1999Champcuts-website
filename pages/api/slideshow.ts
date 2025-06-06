@@ -1,18 +1,31 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { initializeApp, applicationDefault } from 'firebase-admin/app';
+import { initializeApp, applicationDefault, getApps, getApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import path from 'path'; // Keep path for order file if needed for migration
 import fs from 'fs'; // Keep fs for order file if needed for migration
 
 // Initialize Firebase Admin SDK if not already initialized
-if (!initializeApp.length) {
-  initializeApp({
-    credential: applicationDefault(),
-    // No storageBucket needed for fetching
-  });
+// Use getApps().length to check if an app is already initialized
+// Use getApp() with a try-catch to check for the default app specifically
+
+let firebaseAdminApp;
+
+try {
+  firebaseAdminApp = getApp();
+} catch (e: any) {
+  if (e.code === 'app/no-app') {
+    firebaseAdminApp = initializeApp({
+      credential: applicationDefault(),
+      // No storageBucket needed for fetching
+    });
+  } else {
+    console.error('Error getting Firebase app:', e);
+    // Re-throw or handle as appropriate
+    throw e;
+  }
 }
 
-const db = getFirestore();
+const db = getFirestore(firebaseAdminApp);
 const slideshowItemsCollection = db.collection('slideshowItems');
 const orderDocRef = db.collection('settings').doc('slideshowOrder');
 

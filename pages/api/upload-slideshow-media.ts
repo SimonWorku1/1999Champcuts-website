@@ -1,13 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
 import { v4 as uuidv4 } from 'uuid';
-import { initializeApp, applicationDefault } from 'firebase-admin/app';
+import { initializeApp, applicationDefault, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import path from 'path';
 
 // Initialize Firebase Admin SDK if not already initialized
-if (!initializeApp.length) {
+// Use getApps().length to check if an app is already initialized
+if (getApps().length === 0) {
   initializeApp({
     credential: applicationDefault(),
     storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
@@ -26,6 +27,7 @@ export const config = {
 
 // const uploadDirectory = path.join(process.cwd(), 'public/videos'); // Old local storage path
 const orderDocRef = db.collection('settings').doc('slideshowOrder'); // Firestore document for order
+const slideshowItemsCollection = db.collection('slideshowItems'); // Firestore collection for slideshow items
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -72,6 +74,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const [url] = await bucket.file(destination).getSignedUrl({
         action: 'read',
         expires: '03-09-2491', // Effectively never expires for public content
+      });
+
+      // Add metadata to Firestore
+      await slideshowItemsCollection.doc(fileId).set({
+         id: fileId, // Use UUID as ID
+         src: url, // Cloud Storage public URL
+         title: file.originalFilename || filename, // Use original name or generated name
+         type: ext === '.mp4' || ext === '.mov' ? 'video' : 'image', // Determine type
       });
 
       newSlides.push({

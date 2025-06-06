@@ -1,20 +1,32 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { initializeApp, applicationDefault } from 'firebase-admin/app';
+import { initializeApp, applicationDefault, getApps, getApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import path from 'path';
 import fs from 'fs';
 
 // Initialize Firebase Admin SDK if not already initialized
-if (!initializeApp.length) {
-  initializeApp({
-    credential: applicationDefault(),
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  });
+// Use getApps().length to check if an app is already initialized
+// Use getApp() with a try-catch to check for the default app specifically
+let firebaseAdminApp;
+
+try {
+  firebaseAdminApp = getApp();
+} catch (e: any) {
+  if (e.code === 'app/no-app') {
+    firebaseAdminApp = initializeApp({
+      credential: applicationDefault(),
+      storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    });
+  } else {
+    console.error('Error getting Firebase app:', e);
+    // Re-throw or handle as appropriate
+    throw e;
+  }
 }
 
-const db = getFirestore();
-const storage = getStorage();
+const db = getFirestore(firebaseAdminApp);
+const storage = getStorage(firebaseAdminApp);
 const bucket = storage.bucket();
 const slideshowItemsCollection = db.collection('slideshowItems');
 const orderDocRef = db.collection('settings').doc('slideshowOrder');
