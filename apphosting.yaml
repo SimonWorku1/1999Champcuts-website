@@ -1,0 +1,14 @@
+# apphosting.yaml
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Learn more about this file at https://firebase.google.com/docs/app-hosting/app-hosting.yaml
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+backend:
+  # Unique identifier for the backend service
+  serviceId: champcuts-backend
+  # Region where the backend service is hosted
+  region: us-central1
+
+  # Define environment variables
+  environmentVariables:
+    FIREBASE_STORAGE_BUCKET: your-storage-bucket-name.appspot.com 
