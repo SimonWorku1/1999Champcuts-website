@@ -141,7 +141,7 @@ export default function EditPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-6">Edit Section</h1>
           {loadingAuth ? (
             <div>Loading authentication...</div>
-          ) : user && user.email === allowedEmail ? (
+          ) : user && user.email && user.email.toLowerCase().trim() === allowedEmail.toLowerCase().trim() ? (
             <>
               <div className="flex justify-end mb-4">
                 <Button onClick={handleSignOut} variant="outline">Sign Out</Button>

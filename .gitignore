@@ -34,9 +34,11 @@ yarn-error.log*
 next-env.d.ts
 
 # media files
-*.mov
-*.mp4
-*.avi
-*.wmv
-*.flv
-*.mkv 
+
+# ignore videos and images
+# *.mov
+# *.mp4
+# *.png
+# *.jpg
+# *.jpeg
+# *.gif 
