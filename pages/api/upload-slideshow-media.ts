@@ -1,8 +1,22 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
 import formidable from 'formidable';
 import { v4 as uuidv4 } from 'uuid';
+import { initializeApp, applicationDefault } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { getStorage } from 'firebase-admin/storage';
+import path from 'path';
+
+// Initialize Firebase Admin SDK if not already initialized
+if (!initializeApp.length) {
+  initializeApp({
+    credential: applicationDefault(),
+    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+  });
+}
+
+const db = getFirestore();
+const storage = getStorage();
+const bucket = storage.bucket();
 
 export const config = {
   api: {
@@ -10,8 +24,8 @@ export const config = {
   },
 };
 
-const uploadDirectory = path.join(process.cwd(), 'public/videos'); // Or adjust if images go elsewhere
-const orderPath = path.join(process.cwd(), 'public/slideshow-order.json');
+// const uploadDirectory = path.join(process.cwd(), 'public/videos'); // Old local storage path
+const orderDocRef = db.collection('settings').doc('slideshowOrder'); // Firestore document for order
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
@@ -30,47 +44,56 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const newSlides: { id: string; src: string; title: string; type: 'image' | 'video' }[] = [];
     const newFileIds: string[] = [];
 
-    // Ensure upload directory exists
-    if (!fs.existsSync(uploadDirectory)) {
-      fs.mkdirSync(uploadDirectory, { recursive: true });
-    }
+    // // Ensure upload directory exists - Not needed with Cloud Storage
+    // if (!fs.existsSync(uploadDirectory)) {
+    //   fs.mkdirSync(uploadDirectory, { recursive: true });
+    // }
 
     for (const file of Array.isArray(uploadedFiles) ? uploadedFiles : [uploadedFiles]) {
       const ext = path.extname(file.originalFilename || '').toLowerCase();
-      // Basic check for image/video extensions (can be expanded)
-      if (!['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.mov'].includes(ext)) {
+      const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.mp4', '.mov'];
+
+      if (!allowedExtensions.includes(ext)) {
          console.warn(`Skipping file with unsupported extension: ${file.originalFilename}`);
-         // Optionally delete the temporary file
-         fs.unlinkSync(file.filepath);
+         // Optionally delete the temporary file created by formidable
+         try { fs.unlinkSync(file.filepath); } catch (e) { console.error('Error deleting temp file:', e); }
          continue;
       }
 
-      const filename = `${uuidv4()}${ext}`;
-      const filepath = path.join(uploadDirectory, filename);
+      const fileId = uuidv4(); // Use UUID as ID for Firestore document and Cloud Storage filename
+      const filename = `${fileId}${ext}`;
+      const destination = `slideshow/${filename}`; // Path within the Cloud Storage bucket
 
-      // Move the file
-      fs.copyFileSync(file.filepath, filepath);
-      fs.unlinkSync(file.filepath); // Remove temporary file
+      // Upload file to Cloud Storage
+      await bucket.upload(file.filepath, { destination });
+
+      // Get the public URL (assuming bucket is public or objects are made public)
+      // For more secure access, consider signed URLs or different rules.
+      const [url] = await bucket.file(destination).getSignedUrl({
+        action: 'read',
+        expires: '03-09-2491', // Effectively never expires for public content
+      });
 
       newSlides.push({
-        id: filename, // Use filename as ID
-        src: `/videos/${filename}`, // Public URL
+        id: fileId, // Use UUID as ID
+        src: url, // Cloud Storage public URL
         title: file.originalFilename || filename, // Use original name or generated name
         type: ext === '.mp4' || ext === '.mov' ? 'video' : 'image', // Determine type
       });
-      newFileIds.push(filename);
+      newFileIds.push(fileId);
+
+      // Remove temporary file created by formidable
+       try { fs.unlinkSync(file.filepath); } catch (e) { console.error('Error deleting temp file:', e); }
     }
 
-    // Update slideshow order file to include new files at the end
-    try {
-      const orderData = fs.readFileSync(orderPath, 'utf8');
-      const { order } = JSON.parse(orderData);
-      const updatedOrder = [...order, ...newFileIds];
-      fs.writeFileSync(orderPath, JSON.stringify({ order: updatedOrder }), 'utf8');
-    } catch (orderErr) {
-      console.error('Error updating slideshow order after upload:', orderErr);
-      // Continue despite order file error
+    // Update slideshow order in Firestore
+    const orderDoc = await orderDocRef.get();
+    let currentOrder: string[] = [];
+    if (orderDoc.exists) {
+      currentOrder = orderDoc.data()?.order || [];
     }
+    const updatedOrder = [...currentOrder, ...newFileIds];
+    await orderDocRef.set({ order: updatedOrder });
 
     return res.status(200).json({ message: 'Files uploaded successfully', uploadedFiles: newSlides });
 
@@ -79,3 +102,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: 'Could not upload files' });
   }
 } 
+
+// Import fs for unlinkSync to clean up temporary files
+import fs from 'fs'; 

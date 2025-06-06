@@ -2,6 +2,17 @@ rules_version='2'
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Allow read/write access to slideshow data only for the admin email
+    match /slideshowItems/{slideId} {
+      allow read, write: if request.auth != null && request.auth.token.email == 'simonworku410@gmail.com';
+    }
+
+    // Allow read/write access to the slideshow order document only for the admin email
+    match /settings/slideshowOrder {
+      allow read, write: if request.auth != null && request.auth.token.email == 'simonworku410@gmail.com';
+    }
+
+    // Keep other rules as is, or define rules for other collections if you add them
     match /{document=**} {
       // This rule allows anyone with your database reference to view, edit,
       // and delete all data in your database. It is useful for getting

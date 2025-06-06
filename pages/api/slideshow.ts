@@ -1,33 +1,58 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import fs from 'fs';
-import path from 'path';
+import { initializeApp, applicationDefault } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import path from 'path'; // Keep path for order file if needed for migration
+import fs from 'fs'; // Keep fs for order file if needed for migration
 
-const videosDirectory = path.join(process.cwd(), 'public/videos');
+// Initialize Firebase Admin SDK if not already initialized
+if (!initializeApp.length) {
+  initializeApp({
+    credential: applicationDefault(),
+    // No storageBucket needed for fetching
+  });
+}
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+const db = getFirestore();
+const slideshowItemsCollection = db.collection('slideshowItems');
+const orderDocRef = db.collection('settings').doc('slideshowOrder');
+
+// const videosDirectory = path.join(process.cwd(), 'public/videos'); // Old local storage path
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'GET') {
     try {
-      // Ensure the videos directory exists
-      if (!fs.existsSync(videosDirectory)) {
-        fs.mkdirSync(videosDirectory, { recursive: true });
+      // Fetch all slideshow items from Firestore
+      const itemsSnapshot = await slideshowItemsCollection.get();
+      const fetchedSlides = itemsSnapshot.docs.map(doc => doc.data() as { id: string; src: string; title: string; type: 'video' | 'image' });
+
+      let orderedSlides = fetchedSlides;
+      
+      // Fetch the saved order from Firestore
+      const orderDoc = await orderDocRef.get();
+      if (orderDoc.exists) {
+        const orderData = orderDoc.data();
+        const savedOrder: string[] = orderData?.order || [];
+
+        // Reorder slides based on saved order
+        if (savedOrder.length > 0) {
+          const slidesMap = new Map(fetchedSlides.map(slide => [slide.id, slide]));
+          orderedSlides = savedOrder
+            .map(id => slidesMap.get(id))
+            .filter((slide): slide is { id: string; src: string; title: string; type: 'video' | 'image' } => slide !== undefined);
+
+          // Add any new slides that might not be in the saved order to the end
+          const orderedIds = new Set(orderedSlides.map(slide => slide.id));
+          fetchedSlides.forEach(slide => {
+            if (!orderedIds.has(slide.id)) {
+              orderedSlides.push(slide);
+            }
+          });
+        }
       }
 
-      const filenames = fs.readdirSync(videosDirectory);
-      const videoFiles = filenames.filter(filename => {
-        const ext = path.extname(filename).toLowerCase();
-        return ext === '.mov' || ext === '.mp4'; // Add other video extensions if needed
-      });
-
-      const slides = videoFiles.map(filename => ({
-        id: filename, // Use filename as a simple ID for now
-        src: `/videos/${filename}`, // Public URL path
-        title: filename, // Display filename as title
-        type: 'video' as const,
-      }));
-
-      return res.status(200).json({ slides });
+      return res.status(200).json({ slides: orderedSlides });
     } catch (err) {
-      console.error('Error reading videos directory:', err);
+      console.error('Error fetching slideshow items from Firestore:', err);
       return res.status(500).json({ error: 'Could not load slideshow items' });
     }
   } else {
