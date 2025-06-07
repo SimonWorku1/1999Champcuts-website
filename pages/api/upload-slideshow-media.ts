@@ -8,6 +8,7 @@ import path from 'path';
 import fs from 'fs';
 
 // Initialize Firebase Admin SDK if not already initialized
+console.log('FIREBASE_STORAGE_BUCKET value during initialization:', process.env.FIREBASE_STORAGE_BUCKET);
 if (getApps().length === 0) {
   initializeApp({
     credential: applicationDefault(),
@@ -30,7 +31,6 @@ const orderDocRef = db.collection('settings').doc('slideshowOrder'); // Firestor
 const slideshowItemsCollection = db.collection('slideshowItems'); // Firestore collection for slideshow items
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  console.log('FIREBASE_STORAGE_BUCKET value in API:', process.env.FIREBASE_STORAGE_BUCKET);
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
