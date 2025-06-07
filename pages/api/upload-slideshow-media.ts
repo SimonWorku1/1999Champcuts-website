@@ -1,18 +1,41 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
 import { v4 as uuidv4 } from 'uuid';
-import { initializeApp, applicationDefault, getApps } from 'firebase-admin/app';
+import { initializeApp, applicationDefault, getApps, getApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import path from 'path';
+import fs from 'fs';
 
 // Initialize Firebase Admin SDK if not already initialized
-// Use getApps().length to check if an app is already initialized
-if (getApps().length === 0) {
-  initializeApp({
-    credential: applicationDefault(),
-    storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  });
+let firebaseAdminApp;
+
+try {
+  firebaseAdminApp = getApp();
+} catch (e: any) {
+  if (e.code === 'app/no-app') {
+    try {
+      // Attempt to initialize with applicationDefault first (for Firebase App Hosting)
+      firebaseAdminApp = initializeApp({
+        credential: applicationDefault(),
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+      });
+    } catch (defaultError) {
+      console.warn('Failed to initialize with applicationDefault. Attempting with service account key.', defaultError);
+      // If applicationDefault fails, try with service account key (for Vercel/other envs)
+      if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+        throw new Error('The FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set and applicationDefault failed.');
+      }
+      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+      firebaseAdminApp = initializeApp({
+        credential: cert(serviceAccount),
+        storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+      });
+    }
+  } else {
+    console.error('Error getting Firebase app:', e);
+    throw e;
+  }
 }
 
 const db = getFirestore();
