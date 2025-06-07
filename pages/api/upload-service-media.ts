@@ -3,6 +3,30 @@ import fs from 'fs';
 import path from 'path';
 import formidable from 'formidable';
 import { v4 as uuidv4 } from 'uuid';
+import { initializeApp, applicationDefault, getApps, getApp, cert } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { getStorage } from 'firebase-admin/storage';
+
+// Initialize Firebase Admin SDK if not already initialized
+let firebaseAdminApp;
+
+try {
+  firebaseAdminApp = getApp();
+} catch (e: any) {
+  if (e.code === 'app/no-app') {
+    if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+      throw new Error('The FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set.');
+    }
+    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
+    firebaseAdminApp = initializeApp({
+      credential: cert(serviceAccount),
+      storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
+    });
+  } else {
+    console.error('Error getting Firebase app:', e);
+    throw e;
+  }
+}
 
 export const config = {
   api: {
