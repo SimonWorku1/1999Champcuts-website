@@ -10,9 +10,3 @@ run_service:
   image: default
   ports:
     - port: 3000
-env:
-  - variable: FIREBASE_STORAGE_BUCKET
-    secret: FIREBASE_STORAGE_BUCKET
-    availability:
-      - BUILD
-      - RUNTIME
