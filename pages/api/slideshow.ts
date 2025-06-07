@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { initializeApp, applicationDefault, getApps, getApp, cert } from 'firebase-admin/app';
+import { initializeApp, applicationDefault, getApps, getApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import path from 'path'; // Keep path for order file if needed for migration
 import fs from 'fs'; // Keep fs for order file if needed for migration
@@ -14,24 +14,10 @@ try {
   firebaseAdminApp = getApp();
 } catch (e: any) {
   if (e.code === 'app/no-app') {
-    try {
-      // Attempt to initialize with applicationDefault first (for Firebase App Hosting)
-      firebaseAdminApp = initializeApp({
-        credential: applicationDefault(),
-        // No storageBucket needed for fetching in this specific API
-      });
-    } catch (defaultError) {
-      console.warn('Failed to initialize with applicationDefault. Attempting with service account key.', defaultError);
-      // If applicationDefault fails, try with service account key (for Vercel/other envs)
-      if (!process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
-        throw new Error('The FIREBASE_SERVICE_ACCOUNT_KEY environment variable is not set and applicationDefault failed.');
-      }
-      const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-      firebaseAdminApp = initializeApp({
-        credential: cert(serviceAccount),
-        // No storageBucket needed for fetching in this specific API
-      });
-    }
+    firebaseAdminApp = initializeApp({
+      credential: applicationDefault(),
+      // No storageBucket needed for fetching
+    });
   } else {
     console.error('Error getting Firebase app:', e);
     // Re-throw or handle as appropriate
