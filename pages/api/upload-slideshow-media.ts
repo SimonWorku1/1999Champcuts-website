@@ -1,25 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import formidable from 'formidable';
 import { v4 as uuidv4 } from 'uuid';
-import { initializeApp, applicationDefault, getApps, getApp } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-import { getStorage } from 'firebase-admin/storage';
 import path from 'path';
 import fs from 'fs';
+import { storage, db } from '@/lib/firebaseAdmin'; // Import both storage and db
 
-// Initialize Firebase Admin SDK if not already initialized
-if (getApps().length === 0) {
-  initializeApp({
-    credential: applicationDefault(),
-    storageBucket: 'champcuts-1eb3a.appspot.com', // Explicitly set the storage bucket
-  });
-}
+const bucket = storage.bucket(); // No error anymore, using initialized storage
 
-const db = getFirestore();
-const storage = getStorage();
-const bucket = storage.bucket();
-
-// console.log('Firebase Storage Bucket Name after initialization:', bucket.name); // Removed log
+// Test bucket access:
+console.log('Using bucket:', bucket.name);
 
 export const config = {
   api: {
