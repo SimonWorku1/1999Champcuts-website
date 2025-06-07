@@ -12,7 +12,7 @@ run_service:
     - port: 3000
 env:
   - variable: FIREBASE_STORAGE_BUCKET
-    value: champcuts-1eb3a.firebaseapp.com
+    value: champcuts-1eb3a.appspot.com
     availability:
       - BUILD
       - RUNTIME
