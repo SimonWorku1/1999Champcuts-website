@@ -6,11 +6,18 @@
     "indexes": "firestore.indexes.json"
   },
   "hosting": {
-    "public": "out",
+    "source": ".next",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
     ]
+  },
+  "functions": {
+    "runtime": "nodejs18",
+    "source": "functions",
+    "firebase": {
+      "storageBucket": "champcuts-1eb3a.appspot.com"
+    }
   }
 }

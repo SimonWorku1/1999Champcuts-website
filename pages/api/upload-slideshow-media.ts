@@ -8,11 +8,10 @@ import path from 'path';
 import fs from 'fs';
 
 // Initialize Firebase Admin SDK if not already initialized
-// console.log('FIREBASE_STORAGE_BUCKET value during initialization:', process.env.FIREBASE_STORAGE_BUCKET);
 if (getApps().length === 0) {
   initializeApp({
     credential: applicationDefault(),
-    // storageBucket: process.env.FIREBASE_STORAGE_BUCKET, // Removed explicit storageBucket
+    storageBucket: 'champcuts-1eb3a.appspot.com', // Explicitly set the storage bucket
   });
 }
 
@@ -20,8 +19,7 @@ const db = getFirestore();
 const storage = getStorage();
 const bucket = storage.bucket();
 
-// Log the resolved bucket name to verify
-console.log('Firebase Storage Bucket Name after initialization:', bucket.name);
+// console.log('Firebase Storage Bucket Name after initialization:', bucket.name); // Removed log
 
 export const config = {
   api: {
