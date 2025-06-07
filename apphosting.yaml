@@ -10,6 +10,9 @@ run_service:
   image: default
   ports:
     - port: 3000
-  env:
-    - key: FIREBASE_STORAGE_BUCKET
-      value: champcuts-1eb3a.firebaseapp.com
+env:
+  - variable: FIREBASE_STORAGE_BUCKET
+    value: champcuts-1eb3a.firebaseapp.com
+    availability:
+      - BUILD
+      - RUNTIME
