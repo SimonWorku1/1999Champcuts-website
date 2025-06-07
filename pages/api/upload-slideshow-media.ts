@@ -5,6 +5,7 @@ import { initializeApp, applicationDefault, getApps, getApp } from 'firebase-adm
 import { getFirestore } from 'firebase-admin/firestore';
 import { getStorage } from 'firebase-admin/storage';
 import path from 'path';
+import fs from 'fs';
 
 // Initialize Firebase Admin SDK if not already initialized
 if (getApps().length === 0) {
@@ -112,5 +113,3 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: 'Could not upload files' });
   }
 } 
-
-// Import fs for unlinkSync to clean up temporary files 
