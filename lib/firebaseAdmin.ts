@@ -8,10 +8,10 @@ const firebaseAdminApp =
   getApps().length === 0
     ? initializeApp({
         credential: applicationDefault(),
-        storageBucket: 'champcuts-1eb3a.appspot.com', // ✅ hardcoded to prevent env issues
+        // Removed storageBucket here, as it will be explicitly set in getStorage() call
       })
     : getApps()[0];
 
 console.log('Firebase Admin initialized with bucket:', firebaseAdminApp.options.storageBucket);
-export const storage = getStorage(firebaseAdminApp);
+export const storage = getStorage(firebaseAdminApp, 'champcuts-1eb3a.firebasestorage.app'); // Updated to the correct bucket name
 export const db = getFirestore(firebaseAdminApp); 

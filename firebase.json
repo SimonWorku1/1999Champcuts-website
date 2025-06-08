@@ -17,7 +17,7 @@
     "runtime": "nodejs18",
     "source": "functions",
     "firebase": {
-      "storageBucket": "champcuts-1eb3a.appspot.com"
+      "storageBucket": "champcuts-1eb3a.firebasestorage.app"
     }
   }
 }
