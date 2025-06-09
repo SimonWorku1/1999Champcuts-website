@@ -4,7 +4,7 @@ import { db, storage } from '@/lib/firebaseAdmin'; // Import db and storage from
 
 // Removed Firebase Admin SDK initialization from here, now in firebaseAdmin.ts
 
-const bucket = storage.bucket();
+const bucket = storage.bucket('champcuts-1eb3a.firebasestorage.app'); // Explicitly set the bucket name here
 const slideshowItemsCollection = db.collection('slideshowItems');
 const orderDocRef = db.collection('settings').doc('slideshowOrder');
 

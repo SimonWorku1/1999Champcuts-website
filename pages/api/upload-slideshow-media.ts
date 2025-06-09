@@ -7,7 +7,7 @@ import { storage, db } from '@/lib/firebaseAdmin'; // Import both storage and db
 
 // Removed Firebase Admin SDK initialization from here, now in firebaseAdmin.ts
 
-const bucket = storage.bucket(); // Now using bucket configured in lib/firebaseAdmin.ts
+const bucket = storage.bucket('champcuts-1eb3a.firebasestorage.app'); // Explicitly set the bucket name here
 
 // Test bucket access:
 console.log('Using storage bucket:', bucket.name);

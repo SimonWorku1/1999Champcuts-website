@@ -5,7 +5,7 @@ import path from 'path';
 import fs from 'fs'; // Keep fs for temporary file cleanup from formidable
 import { db, storage } from '@/lib/firebaseAdmin'; // Import db and storage from the centralized helper
 
-const bucket = storage.bucket();
+const bucket = storage.bucket('champcuts-1eb3a.firebasestorage.app'); // Explicitly set the bucket name here
 const servicesCollection = db.collection('services');
 
 export const config = {

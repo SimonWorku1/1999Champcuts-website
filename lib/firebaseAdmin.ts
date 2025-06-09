@@ -29,7 +29,6 @@ function createFirebaseAdminApp(params: FirebaseAdminAppParams) {
   return admin.initializeApp({
     credential: cert,
     projectId: params.projectId,
-    storageBucket: params.storageBucket,
   });
 }
 
