@@ -1,6 +1,10 @@
 import admin from 'firebase-admin';
 
 console.log('Running Firebase Admin setup...');
+console.log('Environment Variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID', process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
+console.log('Environment Variable: FIREBASE_CLIENT_EMAIL', process.env.FIREBASE_CLIENT_EMAIL);
+console.log('Environment Variable: FIREBASE_PRIVATE_KEY', process.env.FIREBASE_PRIVATE_KEY ? '*****' : 'UNDEFINED/EMPTY'); // Mask sensitive key
+console.log('Environment Variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET', process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET);
 
 interface FirebaseAdminAppParams {
   projectId: string;

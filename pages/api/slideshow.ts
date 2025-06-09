@@ -16,7 +16,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       // Fetch all slideshow items from Firestore
       const itemsSnapshot = await slideshowItemsCollection.get();
-      const fetchedSlides = itemsSnapshot.docs.map(doc => doc.data() as { id: string; src: string; title: string; type: 'video' | 'image' });
+      const fetchedSlides = itemsSnapshot.docs.map(doc => {
+        const data = doc.data() as { id: string; src: string; title: string; type: 'video' | 'image' };
+        console.log(`Slideshow item ID: ${data.id}, src: ${data.src}`); // Diagnostic log
+        return data;
+      });
 
       let orderedSlides = fetchedSlides;
       
