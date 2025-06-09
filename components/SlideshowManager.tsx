@@ -90,7 +90,7 @@ export default function SlideshowManager(props: SlideshowManagerProps) {
     setUploading(true);
     const formData = new FormData();
     for (const file of Array.from(files)) {
-      formData.append('files', file);
+      formData.append('media', file);
     }
 
     try {
@@ -193,15 +193,12 @@ export default function SlideshowManager(props: SlideshowManagerProps) {
     return <div>Loading slideshow...</div>;
   }
 
-  if (error) {
-    return <div className="text-red-500 font-bold">{error}</div>;
-  }
-
   return (
     <div className="space-y-6">
+      {error && <div className="text-red-500 font-bold mb-4">{error}</div>}
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Slideshow Items</h3>
-      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4">
           {/* Add Save Order Button */}
           <Button onClick={() => saveOrder()} className="bg-green-500 hover:bg-green-600 text-white">
              Save
@@ -223,8 +220,8 @@ export default function SlideshowManager(props: SlideshowManagerProps) {
             disabled={uploading}
           />
         </label>
+        </div>
       </div>
-              </div>
 
       <DndContext
         sensors={sensors}
