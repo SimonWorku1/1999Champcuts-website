@@ -43,4 +43,5 @@ const firebaseAdminApp = createFirebaseAdminApp(params);
 
 // console.log('Firebase Admin initialized with bucket:', firebaseAdminApp.options.storageBucket); // Removed problematic log
 export const storage = admin.storage(firebaseAdminApp);
+console.log('Firebase Admin storage object initialized. It has a bucket method:', typeof storage.bucket === 'function');
 export const db = admin.firestore(firebaseAdminApp); 
