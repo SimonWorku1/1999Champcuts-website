@@ -1,31 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { initializeApp, applicationDefault, getApps, getApp } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+// Removed direct firebase-admin imports as they are now in firebaseAdmin.ts
 import path from 'path'; // Keep path for order file if needed for migration
 import fs from 'fs'; // Keep fs for order file if needed for migration
+import { db } from '@/lib/firebaseAdmin'; // Import db from the centralized helper
 
-// Initialize Firebase Admin SDK if not already initialized
-// Use getApps().length to check if an app is already initialized
-// Use getApp() with a try-catch to check for the default app specifically
+// Removed Firebase Admin SDK initialization from here, now in firebaseAdmin.ts
 
-let firebaseAdminApp;
-
-try {
-  firebaseAdminApp = getApp();
-} catch (e: any) {
-  if (e.code === 'app/no-app') {
-    firebaseAdminApp = initializeApp({
-      credential: applicationDefault(),
-      // No storageBucket needed for fetching
-    });
-  } else {
-    console.error('Error getting Firebase app:', e);
-    // Re-throw or handle as appropriate
-    throw e;
-  }
-}
-
-const db = getFirestore(firebaseAdminApp);
 const slideshowItemsCollection = db.collection('slideshowItems');
 const orderDocRef = db.collection('settings').doc('slideshowOrder');
 

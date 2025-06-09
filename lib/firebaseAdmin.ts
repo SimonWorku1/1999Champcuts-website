@@ -1,17 +1,47 @@
-import { getApps, initializeApp, applicationDefault } from 'firebase-admin/app';
-import { getStorage } from 'firebase-admin/storage';
-import { getFirestore } from 'firebase-admin/firestore';
+import admin from 'firebase-admin';
 
 console.log('Running Firebase Admin setup...');
 
-const firebaseAdminApp = 
-  getApps().length === 0
-    ? initializeApp({
-        credential: applicationDefault(),
-        storageBucket: 'champcuts-1eb3a.firebasestorage.app',
-      })
-    : getApps()[0];
+interface FirebaseAdminAppParams {
+  projectId: string;
+  clientEmail: string;
+  storageBucket: string;
+  privateKey: string;
+}
 
-console.log('Firebase Admin initialized with bucket:', firebaseAdminApp.options.storageBucket);
-export const storage = getStorage(firebaseAdminApp);
-export const db = getFirestore(firebaseAdminApp); 
+function formatPrivateKey(key: string) {
+  return key.replace(/\\n/g, "\n");
+}
+
+function createFirebaseAdminApp(params: FirebaseAdminAppParams) {
+  const privateKey = formatPrivateKey(params.privateKey);
+
+  if (admin.apps.length > 0) {
+    return admin.app();
+  }
+
+  const cert = admin.credential.cert({
+    projectId: params.projectId,
+    clientEmail: params.clientEmail,
+    privateKey,
+  });
+
+  return admin.initializeApp({
+    credential: cert,
+    projectId: params.projectId,
+    storageBucket: params.storageBucket,
+  });
+}
+
+const params = {
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID as string,
+  clientEmail: process.env.FIREBASE_CLIENT_EMAIL as string,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET as string,
+  privateKey: process.env.FIREBASE_PRIVATE_KEY as string,
+};
+
+const firebaseAdminApp = createFirebaseAdminApp(params);
+
+// console.log('Firebase Admin initialized with bucket:', firebaseAdminApp.options.storageBucket); // Removed problematic log
+export const storage = admin.storage(firebaseAdminApp);
+export const db = admin.firestore(firebaseAdminApp); 
