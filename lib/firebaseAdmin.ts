@@ -14,11 +14,11 @@ interface FirebaseAdminAppParams {
 }
 
 function formatPrivateKey(key: string) {
-  return key.replace(/\\n/g, "\n");
+  return key;
 }
 
 function createFirebaseAdminApp(params: FirebaseAdminAppParams) {
-  const privateKey = formatPrivateKey(params.privateKey);
+  const privateKey = params.privateKey;
 
   if (admin.apps.length > 0) {
     return admin.app();
