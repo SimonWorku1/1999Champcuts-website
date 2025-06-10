@@ -6,14 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Instagram, Youtube, Mail, LinkIcon, Scissors, Calendar, Clock, MapPin, Phone } from "lucide-react"
 import Image from "next/image"
 
-const videos = [
-  { src: "/videos/736d27dc0e1343a8a962ef71c706fb53.mov", title: "Video 1" },
-  { src: "/videos/taoper.mov", title: "Video 2" },
-  { src: "/videos/318de1ed9c4a4f5985771bd78c8b3690.mov", title: "Video 3" },
-  { src: "/videos/0125.mov", title: "Video 4" },
-  { src: "/videos/eric.mov", title: "Video 5" }
-]
-
 interface Service {
   id: string;
   name: string;
@@ -54,25 +46,29 @@ export default function Home() {
   const [slides, setSlides] = useState<Array<{ src: string; title: string; type: 'video' | 'image' }>>([])
 
   useEffect(() => {
-    // Load slides from localStorage
-    const savedSlides = localStorage.getItem('slideshow');
-    if (savedSlides) {
-      const parsedSlides = JSON.parse(savedSlides);
-      console.log('Loading slides from localStorage:', parsedSlides);
-      setSlides(parsedSlides);
-    } else {
-      // If no saved slides, use default videos
-      const defaultSlides = videos.map((video, index) => ({
-        id: `default-${index}`,
-        src: video.src,
-        title: video.title,
-        type: 'video' as const
-      }));
-      console.log('Using default slides:', defaultSlides);
-      setSlides(defaultSlides);
-      localStorage.setItem('slideshow', JSON.stringify(defaultSlides));
-    }
-  }, []);
+    const fetchSlideshowItems = async () => {
+      try {
+        const res = await fetch('/api/slideshow');
+        if (!res.ok) {
+          throw new Error(`Failed to fetch slideshow items: ${res.status} ${res.statusText}`);
+        }
+        const data = await res.json();
+        // Ensure that fetched slides have all required properties, adding defaults if necessary
+        const fetchedSlides = data.slides.map((slide: any) => ({
+          id: slide.id || `fetched-${Math.random()}`,
+          src: slide.src,
+          title: slide.title || '',
+          type: slide.type || 'video', // Default to video if type is missing
+        }));
+        setSlides(fetchedSlides);
+      } catch (error) {
+        console.error('Error fetching slideshow items:', error);
+        // Optionally set an error state to display a message to the user
+      }
+    };
+
+    fetchSlideshowItems();
+  }, []); // Empty dependency array means this effect runs once on mount
 
   // When the video ends, go to the next one (loop)
   const handleEnded = () => {
@@ -82,7 +78,7 @@ export default function Home() {
 
   // Play video when it becomes visible
   useEffect(() => {
-    if (videoRef.current && slides[current]?.type === 'video') {
+    if (videoRef.current && slides.length > 0 && slides[current]?.type === 'video') {
       const playVideo = async () => {
         try {
           await videoRef.current?.play()
@@ -94,6 +90,8 @@ export default function Home() {
       }
 
       playVideo()
+    } else if (slides.length > 0 && slides[current]?.type === 'image') {
+      setIsVideoLoading(false) // Images don't need video loading state
     } else {
       setIsVideoLoading(false)
     }

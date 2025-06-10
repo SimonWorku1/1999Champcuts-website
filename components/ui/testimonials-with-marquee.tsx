@@ -22,10 +22,8 @@ export function TestimonialsSection({
   const containerRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
-    console.log('useEffect running');
     const container = containerRef.current;
     if (!container) {
-      console.log('Container ref is null');
       return;
     }
 
@@ -39,9 +37,7 @@ export function TestimonialsSection({
     const scroll = () => {
       if (!container) return;
 
-      console.log('Before scrollLeft:', container.scrollLeft);
       container.scrollLeft += scrollSpeed;
-      console.log('After scrollLeft increment:', container.scrollLeft);
       
       // Check if we've scrolled past the first set of testimonials (one loop)
       if (container.scrollLeft >= loopDistance) {
@@ -62,13 +58,9 @@ export function TestimonialsSection({
 
     // Start the animation after ensuring layout calculation is done
     const timeoutId = setTimeout(() => {
-      console.log('setTimeout running');
       // Recalculate loopDistance more reliably after a short delay
       if (containerRef.current) {
         loopDistance = containerRef.current.scrollWidth / 2;
-        console.log('Calculated loopDistance:', loopDistance);
-        console.log('container.scrollWidth:', containerRef.current.scrollWidth);
-        console.log('container.clientWidth:', containerRef.current.clientWidth);
       }
       // Start the animation regardless, relying on loopDistance for resetting
       animationFrameId = requestAnimationFrame(scroll);
@@ -98,7 +90,7 @@ export function TestimonialsSection({
           </p>
         </div>
 
-        <div className="relative flex w-full flex-col items-center justify-center overflow-x-auto">
+        <div className="relative flex w-full flex-col items-center justify-center overflow-x-hidden">
           <div ref={containerRef} className="flex min-w-[200%] gap-8">
             {[...testimonials, ...testimonials].map((testimonial, i) => (
               <TestimonialCard key={i} {...testimonial} />
