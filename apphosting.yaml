@@ -10,5 +10,3 @@ run_service:
   image: default
   ports:
     - port: 3000
-  environment:
-    FIREBASE_STORAGE_BUCKET: champcuts-1eb3a.firebaseapp.com
