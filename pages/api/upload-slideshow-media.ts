@@ -65,7 +65,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'No file received.' });
     }
 
-    const filename = `${uuidv4()}${path.extname(uploadedFile.originalFilename || 'unknown')}`;
+    // Generate a unique ID for the Firestore document and the file
+    const documentId = uuidv4();
+    const filename = `${documentId}${path.extname(uploadedFile.originalFilename || 'unknown')}`;
     const filePathInStorage = `slideshow/${filename}`;
     const fileRef = bucket.file(filePathInStorage);
 
@@ -96,16 +98,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log(`File uploaded successfully to: ${url}`);
 
-    // Add item to Firestore slideshowItems collection
-    await slideshowItemsCollection.add({
-      id: uuidv4(), // Generate a unique ID for the slideshow item
+    // Add item to Firestore slideshowItems collection with explicit document ID
+    await slideshowItemsCollection.doc(documentId).set({
       src: url,
       type: uploadedFile.mimetype?.startsWith('video/') ? 'video' : 'image', // Determine type based on mimetype
       originalFilename: uploadedFile.originalFilename,
       uploadedAt: new Date(),
     });
 
-    res.status(200).json({ message: 'File uploaded successfully', url });
+    res.status(200).json({ message: 'File uploaded successfully', url, id: documentId }); // Return the documentId
 
   } catch (error) {
     console.error('Error uploading file:', error);

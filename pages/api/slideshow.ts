@@ -17,9 +17,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Fetch all slideshow items from Firestore
       const itemsSnapshot = await slideshowItemsCollection.get();
       const fetchedSlides = itemsSnapshot.docs.map(doc => {
-        const data = doc.data() as { id: string; src: string; title: string; type: 'video' | 'image' };
-        console.log(`Slideshow item ID: ${data.id}, src: ${data.src}`); // Diagnostic log
-        return data;
+        const data = doc.data() as { src: string; title: string; type: 'video' | 'image' }; // Removed id from type
+        console.log(`Slideshow item ID: ${doc.id}, src: ${data.src}`); // Diagnostic log, using doc.id
+        return {
+          id: doc.id, // Use the actual Firestore document ID
+          src: data.src,
+          title: data.title,
+          type: data.type,
+        };
       });
 
       let orderedSlides = fetchedSlides;
