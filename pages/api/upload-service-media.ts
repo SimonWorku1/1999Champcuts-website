@@ -28,6 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const serviceId = fields.serviceId?.[0];
 
     if (!uploadedFile || !serviceId) {
+      console.error('Upload Service Media: File or Service ID missing.', { uploadedFile: !!uploadedFile, serviceId }); // Debug log
       return res.status(400).json({ error: 'File and service ID are required' });
     }
 
@@ -42,7 +43,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const fileId = uuidv4();
     const filename = `${fileId}${ext}`;
-    const destination = `services/${filename}`; // Path within the Cloud Storage bucket
+    const destination = `services/${filename}`;
+
+    console.log('Upload Service Media: Uploading to destination:', destination); // Debug log
 
     // Upload file to Cloud Storage
     await bucket.upload(uploadedFile.filepath, { destination });
@@ -50,8 +53,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Get the public URL
     const [url] = await bucket.file(destination).getSignedUrl({
       action: 'read',
-      expires: '03-09-2491', // Effectively never expires for public content
+      expires: '03-09-2491',
     });
+
+    console.log('Upload Service Media: File uploaded successfully, URL:', url); // Debug log
 
     // Fetch the current service to check for existing media
     const serviceDocRef = servicesCollection.doc(serviceId);
@@ -60,6 +65,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (serviceDoc.exists) {
       const serviceData = serviceDoc.data();
       const oldMediaUrl = serviceData?.mediaUrl;
+      console.log('Upload Service Media: Existing mediaUrl:', oldMediaUrl); // Debug log
 
       // If an old media exists and is a Firebase Storage URL, delete it
       if (oldMediaUrl && oldMediaUrl.includes('firebasestorage.app')) {
@@ -67,6 +73,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           const oldFilename = oldMediaUrl.split('/o/services%2F')[1]?.split('?alt=media')[0];
           if (oldFilename) {
             const decodedOldFilename = decodeURIComponent(oldFilename);
+            console.log('Upload Service Media: Attempting to delete old media:', `services/${decodedOldFilename}`); // Debug log
             await bucket.file(`services/${decodedOldFilename}`).delete();
             console.log(`Deleted old media: services/${decodedOldFilename}`);
           }
@@ -81,6 +88,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       mediaUrl: url,
       mediaType: uploadedFile.mimetype?.startsWith('video/') ? 'video' : 'image',
     });
+    console.log('Upload Service Media: Firestore document updated for serviceId:', serviceId); // Debug log
 
     // Remove temporary file created by formidable
     try { fs.unlinkSync(uploadedFile.filepath); } catch (e) { console.error('Error deleting temp file:', e); }

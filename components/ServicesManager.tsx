@@ -111,20 +111,17 @@ export default function ServicesManager() {
       const updatedService = { ...serviceToUpdate, mediaUrl: undefined, mediaType: undefined };
 
       // Send the updated service to the save endpoint
-      const res = await fetch('/api/services', {
+      const res = await fetch('/api/services/remove-media', { // New endpoint for media removal
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedService),
+        body: JSON.stringify({ serviceId: serviceId }), // Only send serviceId
       });
 
       if (!res.ok) throw new Error('Failed to remove media');
 
       // Optimistically update the state
       setServices(services.map(s => s.id === serviceId ? updatedService : s));
-
-      // Optionally, also delete the file from the server to clean up storage
-      // This would require a new API endpoint specifically for deleting media files.
-      // For now, we'll just remove the reference in services.json.
+      console.log('Media removed from service and storage.');
 
     } catch (err) {
       console.error('Error removing media:', err);
