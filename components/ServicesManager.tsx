@@ -103,30 +103,22 @@ export default function ServicesManager() {
 
   const removeMedia = async (serviceId: string) => {
     try {
-      // Find the service to update
-      const serviceToUpdate = services.find(s => s.id === serviceId);
-      if (!serviceToUpdate) return;
-
-      // Create an updated service object without mediaUrl and mediaType
-      const updatedService = { ...serviceToUpdate, mediaUrl: undefined, mediaType: undefined };
-
-      // Send the updated service to the save endpoint
-      const res = await fetch('/api/services/remove-media', { // New endpoint for media removal
+      console.log('Attempting to remove media for service ID:', serviceId); // Debug log
+      const res = await fetch('/api/services/remove-media', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ serviceId: serviceId }), // Only send serviceId
+        body: JSON.stringify({ serviceId }),
       });
 
-      if (!res.ok) throw new Error('Failed to remove media');
-
-      // Optimistically update the state
-      setServices(services.map(s => s.id === serviceId ? updatedService : s));
-      console.log('Media removed from service and storage.');
+      if (!res.ok) {
+        throw new Error(`Failed to remove media: ${res.status} ${res.statusText}`);
+      }
+      console.log('Media removal API call successful for service ID:', serviceId); // Debug log
+      await fetchServices(); // Refresh services after media removal
 
     } catch (err) {
       console.error('Error removing media:', err);
       setError('Could not remove media');
-      fetchServices(); // Refetch if optimistic update fails
     }
   };
 
@@ -273,7 +265,19 @@ export default function ServicesManager() {
                     <div>
                       <label htmlFor={`price-${service.id}`} className="block mb-1 font-medium">Price</label>
                       <div className="flex items-center gap-2 mt-4">
-                        <span className="text-2xl font-bold">{service.price}</span>
+                        <input
+                          type="text"
+                          id={`price-${service.id}`}
+                          value={services.find(s => s.id === service.id)?.price || ''}
+                          onChange={(e) => {
+                            let value = e.target.value;
+                            if (value && value[0] !== '$') value = '$' + value.replace(/^\$+/, '');
+                            const updatedService = { ...service, price: value };
+                            setServices(services.map(s => s.id === service.id ? updatedService : s));
+                          }}
+                          className="w-full border rounded px-3 py-2 dark:bg-zinc-700 dark:border-zinc-600"
+                          placeholder="Price"
+                        />
                         {service.premium && (
                           <span className="ml-4 px-3 py-1 bg-blue-700 text-white text-xs rounded-full font-semibold">
                             PREMIUM HOURS
@@ -375,7 +379,11 @@ export default function ServicesManager() {
                 <input
                   type="text"
                   value={editingService.price}
-                  onChange={(e) => setEditingService({ ...editingService, price: e.target.value })}
+                  onChange={(e) => {
+                    let value = e.target.value;
+                    if (value && value[0] !== '$') value = '$' + value.replace(/^\$+/, '');
+                    setEditingService({ ...editingService, price: value });
+                  }}
                   className="w-full border rounded px-3 py-2"
                 />
               </div>

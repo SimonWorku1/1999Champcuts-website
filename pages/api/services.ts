@@ -19,9 +19,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         ...doc.data(),
       }));
       return res.status(200).json({ services });
-    } catch (err) {
-      console.error('Error fetching services from Firestore:', err);
-      return res.status(500).json({ error: 'Could not read services' });
+    } catch (err: any) {
+      console.error('Error fetching services from Firestore:', err.message || err);
+      return res.status(500).json({ error: 'Could not read services', details: err.message || 'Unknown error' });
     }
   } else if (req.method === 'POST') {
     try {
@@ -37,13 +37,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(200).json({ message: 'Service added', id: documentId });
       } else {
         // If ID exists, update the existing service
-        await servicesCollection.doc(newService.id).update(newService);
-        return res.status(200).json({ message: 'Service updated' });
+        await servicesCollection.doc(newService.id).set(newService, { merge: true });
+        return res.status(200).json({ message: 'Service saved/updated' });
       }
 
-    } catch (err) {
-      console.error('Error saving service to Firestore:', err);
-      return res.status(500).json({ error: 'Could not save service' });
+    } catch (err: any) {
+      console.error('Error saving service to Firestore:', err.message || err);
+      return res.status(500).json({ error: 'Could not save service', details: err.message || 'Unknown error' });
     }
   } else {
     return res.status(405).json({ error: 'Method not allowed' });

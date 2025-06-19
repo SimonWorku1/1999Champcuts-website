@@ -44,6 +44,7 @@ export default function Home() {
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const [isVideoLoading, setIsVideoLoading] = useState(true)
   const [slides, setSlides] = useState<Array<{ src: string; title: string; type: 'video' | 'image' }>>([])
+  const imageTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     const fetchSlideshowItems = async () => {
@@ -75,6 +76,26 @@ export default function Home() {
     setIsVideoLoading(true)
     setCurrent((prev) => (prev + 1) % slides.length)
   }
+
+  // Handle image timer
+  useEffect(() => {
+    if (slides.length > 0 && slides[current]?.type === 'image') {
+      // Clear any existing timer
+      if (imageTimerRef.current) {
+        clearTimeout(imageTimerRef.current)
+      }
+      // Set new timer for 7 seconds
+      imageTimerRef.current = setTimeout(() => {
+        setCurrent((prev) => (prev + 1) % slides.length)
+      }, 7000)
+    }
+    // Cleanup timer on unmount or when slide changes
+    return () => {
+      if (imageTimerRef.current) {
+        clearTimeout(imageTimerRef.current)
+      }
+    }
+  }, [current, slides])
 
   // Play video when it becomes visible
   useEffect(() => {
