@@ -227,6 +227,7 @@ export default function Home() {
           </p>
           <Button
             size="lg"
+            href="https://app.thecut.co/barbers/1999champ"
             className="bg-accent hover:bg-accent/90 text-primary border-2 border-accent hover:border-accent/90 font-bold py-3 px-10 rounded-full text-lg mb-8 shadow-xl transition"
           >
             BOOK NOW
@@ -292,25 +293,30 @@ export default function Home() {
                 )}
                 <div className="p-6">
                   <h3 className="text-xl font-bold mb-2">{service.name}</h3>
-                  <div className="flex items-center mb-2">
-                    <Clock className="w-4 h-4 mr-2 text-accent" />
-                    <span>{service.duration}</span>
-                  </div>
+                  {service.premium ? (
+                    <div className="flex flex-col items-start mb-2">
+                      <div className="flex items-center">
+                        <Clock className="w-4 h-4 mr-2 text-accent" />
+                        <span>{service.duration}</span>
+                      </div>
+                      <span className="px-3 py-1 bg-blue-700 text-white text-xs rounded-full font-semibold mt-2 mb-2">PREMIUM HOURS</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center mb-2">
+                      <Clock className="w-4 h-4 mr-2 text-accent" />
+                      <span>{service.duration}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center mt-4">
                     <span className="text-2xl font-bold">{service.price}</span>
                   </div>
                 </div>
                 <div className="absolute bottom-0 right-0 p-4 flex flex-col items-end">
-                    {service.premium && (
-                    <span className="px-3 py-1 bg-blue-700 text-white text-xs rounded-full font-semibold mb-2">
-                        PREMIUM HOURS
-                      </span>
-                    )}
                   <Button
                     className="bg-transparent hover:bg-accent text-accent hover:text-primary border-2 border-accent hover:border-accent/90 font-bold py-2 px-6 rounded-full text-sm shadow-md transition"
                   >
                     BOOK NOW
-                    </Button>
+                  </Button>
                 </div>
               </div>
             ))}
