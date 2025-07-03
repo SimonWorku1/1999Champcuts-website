@@ -227,7 +227,6 @@ export default function Home() {
           </p>
           <Button
             size="lg"
-            href="https://app.thecut.co/barbers/1999champ"
             className="bg-accent hover:bg-accent/90 text-primary border-2 border-accent hover:border-accent/90 font-bold py-3 px-10 rounded-full text-lg mb-8 shadow-xl transition"
           >
             BOOK NOW
