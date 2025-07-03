@@ -119,16 +119,28 @@ export default function Home() {
   }, [current, slides])
 
   const [aboutMe, setAboutMe] = useState('');
+  const [aboutMeImage, setAboutMeImage] = useState('');
   const [aboutMeLoading, setAboutMeLoading] = useState(true);
   const [aboutFeatures, setAboutFeatures] = useState<Array<{ icon: string; title: string; description: string }>>([]);
   const [aboutFeaturesLoading, setAboutFeaturesLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/about-me.json')
-      .then(res => res.json())
-      .then(data => setAboutMe(data.text || ''))
-      .catch(() => setAboutMe(''))
-      .finally(() => setAboutMeLoading(false));
+    // Fetch About Me from Firestore
+    const fetchAboutMe = async () => {
+      setAboutMeLoading(true);
+      try {
+        const res = await fetch('/api/about-me');
+        const data = await res.json();
+        setAboutMe(data.text || '');
+        setAboutMeImage(data.imageUrl || '');
+      } catch {
+        setAboutMe('');
+        setAboutMeImage('');
+      } finally {
+        setAboutMeLoading(false);
+      }
+    };
+    fetchAboutMe();
 
     // Fetch about features
     const fetchAboutFeatures = async () => {
@@ -144,7 +156,6 @@ export default function Home() {
         setAboutFeaturesLoading(false);
       }
     };
-
     fetchAboutFeatures();
   }, []);
 
@@ -313,12 +324,13 @@ export default function Home() {
           <div className="flex flex-col md:flex-row items-start gap-12">
             <div className="w-full md:w-1/2">
               <div className="relative w-full max-w-xs aspect-[4/5] rounded-lg overflow-hidden shadow-xl mx-auto">
-                <Image
-                  src="/avatars/yeison1.jpeg"
-                  alt="Yeison - 1999champcutz"
-                  fill
-                  className="object-cover rounded-lg"
-                />
+                {aboutMeImage && (
+                  <img
+                    src={aboutMeImage}
+                    alt="Owner"
+                    className="object-cover rounded-lg w-full h-full"
+                  />
+                )}
               </div>
             </div>
             <div className="w-full md:w-1/2">

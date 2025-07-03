@@ -18,23 +18,33 @@ export default function AboutFeaturesManager() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [isFading, setIsFading] = useState(false);
 
-  const fetchFeatures = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const res = await fetch('/api/about-features');
-      if (!res.ok) throw new Error('Failed to fetch about features');
-      const data = await res.json();
-      setFeatures(data.features || []);
-    } catch (err) {
-      setError('Could not load about features.');
-      console.error('Error fetching about features:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const ensureThreeFeatures = (features: AboutFeature[]): AboutFeature[] => {
+      const defaultIcons = ['Scissors', 'Calendar', 'MapPin'];
+      let arr = features.slice(0, 3);
+      while (arr.length < 3) {
+        arr.push({ icon: defaultIcons[arr.length], title: '', description: '' });
+      }
+      return arr;
+    };
+
+    const fetchFeatures = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const res = await fetch('/api/about-features');
+        if (!res.ok) throw new Error('Failed to fetch about features');
+        const data = await res.json();
+        setFeatures(ensureThreeFeatures(data.features || []));
+      } catch (err) {
+        setError('Could not load about features.');
+        console.error('Error fetching about features:', err);
+        setFeatures(ensureThreeFeatures([]));
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchFeatures();
   }, []);
 
@@ -140,7 +150,7 @@ export default function AboutFeaturesManager() {
       </div>
 
       <div className="flex items-center mt-4">
-        <Button onClick={handleSave} disabled={isSaving || isLoading}>
+        <Button onClick={handleSave} disabled={isSaving || isLoading} className="bg-accent hover:bg-accent/90 text-white">
           {isSaving ? 'Saving...' : 'Save Features'}
         </Button>
 

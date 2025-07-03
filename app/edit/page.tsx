@@ -11,6 +11,7 @@ import Link from 'next/link';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { app } from '@/lib/firebase';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { Trash2 } from 'lucide-react';
 
 export default function EditPage() {
   const [user, setUser] = useState<any>(null);
@@ -55,6 +56,7 @@ export default function EditPage() {
   };
 
   const [aboutMe, setAboutMe] = useState('');
+  const [aboutMeImage, setAboutMeImage] = useState('');
   const [aboutMeLoading, setAboutMeLoading] = useState(true);
   const [aboutMeSaving, setAboutMeSaving] = useState(false);
   const [aboutMeSaved, setAboutMeSaved] = useState(false);
@@ -102,6 +104,8 @@ export default function EditPage() {
         const res = await fetch('/api/about-me');
         const data = await res.json();
         setAboutMe(data.text || '');
+        setAboutMeImage(data.imageUrl || '');
+        setTimeout(adjustTextareaHeight, 0); // Ensure textarea grows after aboutMe is set
       } catch (err) {
         setAboutMeError('Could not load About Me');
       } finally {
@@ -111,6 +115,26 @@ export default function EditPage() {
     fetchAboutMe();
   }, []);
 
+  const handleAboutMeImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    const formData = new FormData();
+    formData.append('file', e.target.files[0]);
+    try {
+      const res = await fetch('/api/upload-aboutme-image', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (res.ok && data.imageUrl) {
+        setAboutMeImage(data.imageUrl);
+      } else {
+        setAboutMeError(data.error || 'Failed to upload image');
+      }
+    } catch (err) {
+      setAboutMeError('Failed to upload image');
+    }
+  };
+
   const saveAboutMe = async () => {
     setAboutMeSaving(true);
     setAboutMeError(null);
@@ -119,7 +143,7 @@ export default function EditPage() {
       const res = await fetch('/api/about-me', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: aboutMe }),
+        body: JSON.stringify({ text: aboutMe, imageUrl: aboutMeImage }),
       });
       if (!res.ok) throw new Error('Failed to save');
       setAboutMeSaved(true);
@@ -165,24 +189,58 @@ export default function EditPage() {
                     <div>Loading...</div>
                   ) : (
                     <>
-                      <textarea
-                        ref={textareaRef}
-                        className="w-full min-h-[120px] p-3 border border-gray-300 rounded-lg mb-2 resize-none overflow-hidden"
-                        value={aboutMe}
-                        onChange={e => setAboutMe(e.target.value)}
-                        disabled={aboutMeSaving}
-                        onInput={adjustTextareaHeight}
-                      />
-                      <div className="flex items-center gap-4 pb-6">
-                        <Button onClick={saveAboutMe} disabled={aboutMeSaving}>
-                          {aboutMeSaving ? 'Saving...' : 'Save'}
-                        </Button>
-                        {aboutMeSaved && (
-                          <span className={`text-green-600 transition-opacity duration-300 ease-in-out ${isFading ? 'opacity-0' : 'opacity-100'}`}>
-                            Saved!
-                          </span>
-                        )}
-                        {aboutMeError && <span className="text-red-500">{aboutMeError}</span>}
+                      <div className="flex flex-col md:flex-row gap-6 items-start mb-2">
+                        <div className="flex-1 w-full">
+                          <textarea
+                            ref={textareaRef}
+                            className="w-full min-h-[40px] max-h-[400px] p-3 border border-gray-300 rounded-lg mb-2 resize-none overflow-hidden"
+                            rows={1}
+                            value={aboutMe}
+                            onChange={e => { setAboutMe(e.target.value); adjustTextareaHeight(); }}
+                            onInput={adjustTextareaHeight}
+                            disabled={aboutMeSaving}
+                          />
+                          <div className="flex items-center gap-4 pb-6">
+                            <Button onClick={saveAboutMe} disabled={aboutMeSaving}>
+                              {aboutMeSaving ? 'Saving...' : 'Save'}
+                            </Button>
+                            {aboutMeSaved && (
+                              <span className={`text-green-600 transition-opacity duration-300 ease-in-out ${isFading ? 'opacity-0' : 'opacity-100'}`}>
+                                Saved!
+                              </span>
+                            )}
+                            {aboutMeError && <span className="text-red-500">{aboutMeError}</span>}
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-center gap-2 min-w-[160px]">
+                          {aboutMeImage && (
+                            <div className="relative group w-40 h-40 mb-2">
+                              <img src={aboutMeImage} alt="Owner" className="w-40 h-40 object-cover rounded-full border" />
+                              <button
+                                type="button"
+                                className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => setAboutMeImage('')}
+                                title="Remove image"
+                              >
+                                <Trash2 className="w-10 h-10 text-white" />
+                              </button>
+                            </div>
+                          )}
+                          <span className="text-sm font-medium mb-1 block">Owner Picture</span>
+                          <label className="w-full cursor-pointer">
+                            <span className="sr-only">Upload Image</span>
+                            <div className="w-full bg-accent hover:bg-accent/90 text-white font-semibold py-2 px-4 rounded text-center transition-colors">
+                              Upload Image
+                            </div>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleAboutMeImageUpload}
+                              className="hidden"
+                              disabled={aboutMeSaving}
+                            />
+                          </label>
+                        </div>
                       </div>
                     </>
                   )}
@@ -191,7 +249,9 @@ export default function EditPage() {
               {/* About Me Features Section */}
               <section id="edit-about-features" className="w-full">
                 <div className="container mx-auto px-4">
-                  <AboutFeaturesManager />
+                  <div className="bg-white border border-zinc-200 rounded-lg shadow p-4">
+                    <AboutFeaturesManager />
+                  </div>
                 </div>
               </section>
               {/* Services Section */}
