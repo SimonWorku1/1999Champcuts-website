@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils"
-import { Avatar, AvatarImage } from "@/components/ui/avatar"
+import { Avatar } from "@/components/ui/avatar"
+import React from "react"
 
 export interface TestimonialAuthor {
   name: string
@@ -15,6 +16,10 @@ export interface TestimonialCardProps {
   stars?: number
 }
 
+const AvatarImage = React.forwardRef(({ src, ...props }, ref) => (
+  <img ref={ref} src={src} {...props} />
+));
+
 export function TestimonialCard({ 
   author,
   text,
@@ -22,6 +27,7 @@ export function TestimonialCard({
   className,
   stars = 5
 }: TestimonialCardProps) {
+  console.log("Avatar src:", author.avatar);
   const Card = href ? 'a' : 'div'
   
   return (

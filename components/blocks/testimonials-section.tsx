@@ -1,4 +1,6 @@
 import { TestimonialsSection } from "../ui/testimonials-with-marquee"
+import { TestimonialCard } from "@/components/ui/testimonial-card";
+import Marquee from 'react-fast-marquee';
 
 const testimonials = [
   {
@@ -45,10 +47,10 @@ const testimonials = [
 
 export function TestimonialsWithAurora() {
   return (
-    <TestimonialsSection
-      title=""
-      description=""
-      testimonials={testimonials}
-    />
+    <Marquee pauseOnHover gradient={false} speed={40}>
+      {testimonials.map((review, i) => (
+        <TestimonialCard key={i} {...review} />
+      ))}
+    </Marquee>
   )
 } 
