@@ -48,8 +48,10 @@ const testimonials = [
 export function TestimonialsWithAurora() {
   return (
     <Marquee pauseOnHover gradient={false} speed={40}>
-      {testimonials.map((review, i) => (
-        <TestimonialCard key={i} {...review} />
+      {testimonials.concat(testimonials).map((review, i) => (
+        <div key={review.author?.name || i} className="mx-5 w-80">
+          <TestimonialCard {...review} />
+        </div>
       ))}
     </Marquee>
   )

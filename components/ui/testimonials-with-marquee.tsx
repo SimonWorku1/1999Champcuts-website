@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils"
 import { TestimonialCard, TestimonialAuthor } from "@/components/ui/testimonial-card"
 import React, { useRef, useEffect, useState, useLayoutEffect } from 'react';
+import Marquee from 'react-fast-marquee';
 
 interface TestimonialsSectionProps {
   title: string
@@ -75,12 +76,8 @@ export function TestimonialsSection({
   }, [testimonials]); // Rerun effect if testimonials change
 
   return (
-    <section className={cn(
-      "bg-background text-foreground",
-      "py-12 sm:py-24 md:py-32 px-0",
-      className
-    )}>
-      <div className="mx-auto flex max-w-container flex-col items-center gap-4 text-center sm:gap-16">
+    <section className="bg-background text-foreground py-12 sm:py-24 md:py-32 px-0 w-full">
+      <div className="w-full flex flex-col items-center gap-4 text-center sm:gap-16">
         <div className="flex flex-col items-center gap-4 px-4 sm:gap-8">
           <h2 className="max-w-[720px] text-3xl font-semibold leading-tight sm:text-5xl sm:leading-tight">
             {title}
@@ -89,13 +86,14 @@ export function TestimonialsSection({
             {description}
           </p>
         </div>
-
-        <div className="relative flex w-full flex-col items-center justify-center overflow-x-hidden">
-          <div ref={containerRef} className="flex min-w-[200%] gap-8">
-            {[...testimonials, ...testimonials].map((testimonial, i) => (
-              <TestimonialCard key={i} {...testimonial} />
+        <div className="relative w-full flex flex-col items-center justify-center overflow-x-hidden">
+          <Marquee pauseOnHover gradient={false} speed={40}>
+            {testimonials.concat(testimonials).map((review, i) => (
+              <div key={review.author?.name || i} className="mx-5 w-80">
+                <TestimonialCard {...review} />
+              </div>
             ))}
-          </div>
+          </Marquee>
           <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-1/3 bg-gradient-to-r from-background sm:block" />
           <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/3 bg-gradient-to-l from-background sm:block" />
         </div>

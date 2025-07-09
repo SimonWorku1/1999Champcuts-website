@@ -16,9 +16,11 @@ export interface TestimonialCardProps {
   stars?: number
 }
 
-const AvatarImage = React.forwardRef(({ src, ...props }, ref) => (
-  <img ref={ref} src={src} {...props} />
-));
+const AvatarImage = React.forwardRef<HTMLImageElement, React.ImgHTMLAttributes<HTMLImageElement>>(
+  ({ src, ...props }, ref) => (
+    <img ref={ref} src={src} {...props} />
+  )
+);
 
 export function TestimonialCard({ 
   author,
@@ -36,7 +38,7 @@ export function TestimonialCard({
       className={cn(
         "flex flex-col justify-between rounded-lg border-2",
         "border-border-line bg-background",
-        "p-6 text-start h-80 w-80",
+        "p-6 text-start h-80 w-80 m-0",
         "transition-colors duration-300",
         "hover:border-accent-hover",
         className
