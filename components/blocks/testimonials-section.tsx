@@ -7,7 +7,7 @@ const testimonials = [
     author: {
       name: "Kimberly Lopez",
       handle: "",
-      avatar: "/avatars/kimberly.jpeg"
+      avatar: "https://firebasestorage.googleapis.com/v0/b/champcuts-1eb3a.appspot.com/o/testimonials%2Fkimberly.jpeg?alt=media"
     },
     text: "My son always loves his fresh fade. He comes home feeling refreshed and happy every time. Thank you!",
     href: "https://app.thecut.co/barbers/1999champ",
@@ -17,7 +17,7 @@ const testimonials = [
     author: {
       name: "Ray",
       handle: "",
-      avatar: "/avatars/ray.jpeg"
+      avatar: "https://firebasestorage.googleapis.com/v0/b/champcuts-1eb3a.appspot.com/o/testimonials%2Fray.jpeg?alt=media"
     },
     text: "Good barber but most importantly, a good dude! Always punctual and professional. 1000% recommend!",
     href: "https://app.thecut.co/barbers/1999champ",
@@ -27,7 +27,7 @@ const testimonials = [
     author: {
       name: "JD Davilla",
       handle: "",
-      avatar: "/avatars/JDDavila.jpeg"
+      avatar: "https://firebasestorage.googleapis.com/v0/b/champcuts-1eb3a.appspot.com/o/testimonials%2FJDDavila.jpeg?alt=media"
     },
     text: "I was new to the Bay and found 1999 Champ Cutz on this app. It's always hard finding a new barber but 1999's services are the best. He runs his business well and professionally. My cuts are always fresh and I get a lot of compliments. I highly recommend him if you are in search of a new barber.",
     href: "https://app.thecut.co/barbers/1999champ",
@@ -37,7 +37,7 @@ const testimonials = [
     author: {
       name: "Angelo Hermosillo",
       handle: "",
-      avatar: "/avatars/angel.png"
+      avatar: "https://firebasestorage.googleapis.com/v0/b/champcuts-1eb3a.appspot.com/o/testimonials%2Fangel.png?alt=media"
     },
     text: "Bro done blessed me.",
     href: "https://app.thecut.co/barbers/1999champ",
