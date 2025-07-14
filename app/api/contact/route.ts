@@ -42,7 +42,7 @@ const cleanupOldEntries = () => {
   const now = Date.now();
   const twentyFourHours = 24 * 60 * 60 * 1000;
   
-  for (const [ip, timestamp] of submissionStore.entries()) {
+  for (const [ip, timestamp] of Array.from(submissionStore.entries())) {
     if (now - timestamp > twentyFourHours) {
       submissionStore.delete(ip);
     }
