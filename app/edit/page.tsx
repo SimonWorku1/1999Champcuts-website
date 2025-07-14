@@ -21,7 +21,7 @@ export default function EditPage() {
   const auth = getAuth(app);
 
   // const allowedEmail = 'simonworku410@gmail.com'; // The specific email allowed access
-  const allowedEmails = ['simonworku410@gmail.com','lukasamaree@gmail.com']; // Array of emails allowed access
+  const allowedEmails = ['simonworku410@gmail.com','lukasamaree@gmail.com', 'Yeisonpablocalmo@gmail.com']; // Array of emails allowed access
 
   // Effect to listen for auth state changes
   useEffect(() => {
