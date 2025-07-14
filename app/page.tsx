@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from "react"
 import { TestimonialsWithAurora } from "@/components/blocks/testimonials-section"
 import { Button } from "@/components/ui/button"
-import { Instagram, Youtube, Mail, LinkIcon, Scissors, Calendar, Clock, MapPin, Phone } from "lucide-react"
+import { Instagram, Youtube, Mail, LinkIcon, Scissors, Calendar, Clock, MapPin, Phone, Edit3 } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
 
 interface Service {
   id: string;
@@ -20,6 +21,38 @@ export default function Home() {
   const [builderContent, setBuilderContent] = useState(null);
   const [services, setServices] = useState<Service[]>([]);
   const [servicesLoading, setServicesLoading] = useState(true);
+  const [showEditButton, setShowEditButton] = useState(false);
+
+  // Contact form state
+  const [contactForm, setContactForm] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+  const [contactFormErrors, setContactFormErrors] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  // Edit button hover detection
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const buttonX = window.innerWidth - 50; // Button position (top-right)
+      const buttonY = 50; // Button position (top-right)
+      const distance = Math.sqrt(
+        Math.pow(e.clientX - buttonX, 2) + Math.pow(e.clientY - buttonY, 2)
+      );
+      
+      setShowEditButton(distance <= 150);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   useEffect(() => {
     // Fetch services from the API
@@ -159,8 +192,105 @@ export default function Home() {
     fetchAboutFeatures();
   }, []);
 
+  // Contact form validation
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validateContactForm = () => {
+    const errors = {
+      name: '',
+      email: '',
+      message: ''
+    };
+
+    if (!contactForm.name.trim()) {
+      errors.name = 'Name is required';
+    }
+
+    if (!contactForm.email.trim()) {
+      errors.email = 'Email is required';
+    } else if (!validateEmail(contactForm.email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+
+    if (!contactForm.message.trim()) {
+      errors.message = 'Message is required';
+    }
+
+    setContactFormErrors(errors);
+    return !errors.name && !errors.email && !errors.message;
+  };
+
+  const handleContactSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateContactForm()) {
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+    setErrorMessage('');
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(contactForm),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        setSubmitStatus('success');
+        setContactForm({ name: '', email: '', message: '' });
+        // Clear success message after 5 seconds
+        setTimeout(() => setSubmitStatus('idle'), 5000);
+      } else {
+        setSubmitStatus('error');
+        setErrorMessage(data.error || 'Failed to send message. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error submitting contact form:', error);
+      setSubmitStatus('error');
+      setErrorMessage('Failed to send message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleContactInputChange = (field: string, value: string) => {
+    setContactForm(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (contactFormErrors[field as keyof typeof contactFormErrors]) {
+      setContactFormErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
+      {/* EDIT BUTTON - Top right corner */}
+      <div 
+        className="fixed top-2 right-2 z-50 transition-all duration-300 ease-in-out p-2"
+      >
+        <Link href="/edit">
+          <Button
+            className={`bg-accent/90 hover:bg-accent text-white rounded-full p-3 shadow-lg transition-all duration-300 ${
+              showEditButton 
+                ? 'opacity-100 scale-100 translate-x-0' 
+                : 'opacity-0 scale-90 translate-x-4'
+            }`}
+            title="Edit Content"
+          >
+            <Edit3 className="w-5 h-5" />
+          </Button>
+        </Link>
+      </div>
+
       {/* NAVIGATION - at the very top */}
       <nav className="w-full flex flex-wrap gap-8 py-6 px-4 bg-background text-primary text-lg font-light tracking-widest justify-center z-30 sticky top-0 backdrop-blur-md bg-background/80">
         <a href="#home" className="hover:text-accent transition-colors">
@@ -452,7 +582,7 @@ export default function Home() {
             </div>
 
             <div className="w-full md:w-1/2">
-              <form className="bg-white dark:bg-zinc-900 p-8 rounded-lg shadow-lg">
+              <form onSubmit={handleContactSubmit} className="bg-white dark:bg-zinc-900 p-8 rounded-lg shadow-lg">
                 <h3 className="text-2xl font-bold mb-6">Send Us a Message</h3>
                 <div className="space-y-4">
                   <div>
@@ -462,9 +592,14 @@ export default function Home() {
                     <input
                       type="text"
                       id="name"
+                      value={contactForm.name}
+                      onChange={(e) => handleContactInputChange('name', e.target.value)}
                       className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-md bg-transparent"
                       placeholder="Your name"
                     />
+                    {contactFormErrors.name && (
+                      <p className="text-red-500 text-sm mt-1">{contactFormErrors.name}</p>
+                    )}
                   </div>
                   <div>
                     <label htmlFor="email" className="block mb-2 font-medium">
@@ -473,9 +608,14 @@ export default function Home() {
                     <input
                       type="email"
                       id="email"
+                      value={contactForm.email}
+                      onChange={(e) => handleContactInputChange('email', e.target.value)}
                       className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-md bg-transparent"
                       placeholder="Your email"
                     />
+                    {contactFormErrors.email && (
+                      <p className="text-red-500 text-sm mt-1">{contactFormErrors.email}</p>
+                    )}
                   </div>
                   <div>
                     <label htmlFor="message" className="block mb-2 font-medium">
@@ -484,11 +624,24 @@ export default function Home() {
                     <textarea
                       id="message"
                       rows={5}
+                      value={contactForm.message}
+                      onChange={(e) => handleContactInputChange('message', e.target.value)}
                       className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-md bg-transparent"
                       placeholder="Your message"
                     ></textarea>
+                    {contactFormErrors.message && (
+                      <p className="text-red-500 text-sm mt-1">{contactFormErrors.message}</p>
+                    )}
                   </div>
-                  <Button className="w-full bg-accent hover:bg-accent/90 text-white py-3">SEND MESSAGE</Button>
+                  <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-white py-3" disabled={isSubmitting}>
+                    {isSubmitting ? 'Sending...' : 'SEND MESSAGE'}
+                  </Button>
+                  {submitStatus === 'success' && (
+                    <p className="text-green-500 text-center mt-4">Message sent successfully!</p>
+                  )}
+                  {submitStatus === 'error' && (
+                    <p className="text-red-500 text-center mt-4">{errorMessage}</p>
+                  )}
                 </div>
               </form>
             </div>
