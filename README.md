@@ -1,26 +1,14 @@
 # 1999Champcuts Website
+Homepage:
+[https://1999-champcuts-website.vercel.app/](url)
 
-A modern web application built with Next.js, TypeScript, and Tailwind CSS.
+Edit Page (needs authentication):
+[https://1999-champcuts-website.vercel.app/edit](url)
 
-## Getting Started
 
-First, install the dependencies:
 
-```bash
-npm install
-# or
-yarn install
-```
+A modern web application built for a barber with Next.js, TypeScript, and Tailwind CSS.
 
-Then, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ## Technologies Used
 
@@ -28,6 +16,12 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - TypeScript
 - Tailwind CSS
 - React
+- Firebase
+    - Firestore
+    - Authentication
+    - Storage
+- Vercel
+  - App Hosting
 
 ## Project Structure
 
