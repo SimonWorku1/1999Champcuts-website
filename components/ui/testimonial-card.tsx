@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils"
-import { Avatar } from "@/components/ui/avatar"
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import React from "react"
 
 export interface TestimonialAuthor {
@@ -16,12 +16,6 @@ export interface TestimonialCardProps {
   stars?: number
 }
 
-const AvatarImage = React.forwardRef<HTMLImageElement, React.ImgHTMLAttributes<HTMLImageElement>>(
-  ({ src, ...props }, ref) => (
-    <img ref={ref} src={src} {...props} />
-  )
-);
-
 export function TestimonialCard({ 
   author,
   text,
@@ -29,8 +23,17 @@ export function TestimonialCard({
   className,
   stars = 5
 }: TestimonialCardProps) {
-  console.log("Avatar src:", author.avatar);
   const Card = href ? 'a' : 'div'
+  
+  // Get initials from the author's name for the fallback
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word.charAt(0))
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
   
   return (
     <Card
@@ -48,6 +51,9 @@ export function TestimonialCard({
         <div className="flex items-center gap-3 mb-2">
           <Avatar className="h-12 w-12">
             <AvatarImage src={author.avatar} alt={author.name} />
+            <AvatarFallback className="bg-muted text-muted-foreground text-sm font-medium">
+              {getInitials(author.name)}
+            </AvatarFallback>
           </Avatar>
           <div className="flex flex-col items-start">
             <h3 className="text-md font-semibold leading-none text-primary">
