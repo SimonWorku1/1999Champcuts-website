@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import { TestimonialsWithAurora } from "@/components/blocks/testimonials-section"
 import { Button } from "@/components/ui/button"
-import { Instagram, Youtube, Mail, LinkIcon, Scissors, Calendar, Clock, MapPin, Phone, Edit3 } from "lucide-react"
+import { Instagram, Youtube, Mail, Scissors, Calendar, Clock, MapPin, Phone, Edit3 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -371,18 +371,23 @@ export default function Home() {
               <Instagram className="w-6 h-6" />
               <span className="sr-only">Instagram</span>
             </a>
-            <a href="#" className="bg-white text-black rounded-full p-3 shadow hover:scale-110 transition">
+            <a 
+              href="https://www.youtube.com/@1999champcutz" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="bg-white text-black rounded-full p-3 shadow hover:scale-110 transition"
+            >
               <Youtube className="w-6 h-6" />
               <span className="sr-only">YouTube</span>
             </a>
-            <a href="#" className="bg-white text-black rounded-full p-3 shadow hover:scale-110 transition">
+            <a 
+              href="mailto:yeisonpablocalmo@gmail.com" 
+              className="bg-white text-black rounded-full p-3 shadow hover:scale-110 transition"
+            >
               <Mail className="w-6 h-6" />
               <span className="sr-only">Email</span>
             </a>
-            <a href="#" className="bg-white text-black rounded-full p-3 shadow hover:scale-110 transition">
-              <LinkIcon className="w-6 h-6" />
-              <span className="sr-only">Link</span>
-            </a>
+
           </div>
         </div>
       </section>
@@ -568,11 +573,19 @@ export default function Home() {
                       <Instagram className="w-5 h-5" />
                       <span className="sr-only">Instagram</span>
                     </a>
-                    <a href="#" className="bg-accent text-white p-2 rounded-full hover:bg-accent/80 transition">
+                    <a 
+                      href="https://www.youtube.com/@1999champcutz" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="bg-accent text-white p-2 rounded-full hover:bg-accent/80 transition"
+                    >
                       <Youtube className="w-5 h-5" />
                       <span className="sr-only">YouTube</span>
                     </a>
-                    <a href="#" className="bg-accent text-white p-2 rounded-full hover:bg-accent/80 transition">
+                    <a 
+                      href="mailto:yeisonpablocalmo@gmail.com" 
+                      className="bg-accent text-white p-2 rounded-full hover:bg-accent/80 transition"
+                    >
                       <Mail className="w-5 h-5" />
                       <span className="sr-only">Email</span>
                     </a>
