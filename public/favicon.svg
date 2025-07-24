@@ -1,0 +1,11 @@
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Left blade -->
+  <path d="M8 6L12 10L10 12L8 10L6 8L8 6Z" fill="white"/>
+  <!-- Right blade -->
+  <path d="M16 6L12 10L14 12L16 10L18 8L16 6Z" fill="white"/>
+  <!-- Handle -->
+  <circle cx="10" cy="16" r="2" fill="white"/>
+  <circle cx="14" cy="16" r="2" fill="white"/>
+  <!-- Pivot point -->
+  <circle cx="12" cy="12" r="1" fill="white"/>
+</svg> 
