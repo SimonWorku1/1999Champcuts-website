@@ -150,9 +150,13 @@ export default function AboutFeaturesManager() {
       </div>
 
       <div className="flex items-center mt-4">
-        <Button onClick={handleSave} disabled={isSaving || isLoading} className="bg-accent hover:bg-accent/90 text-white">
-          {isSaving ? 'Saving...' : 'Save Features'}
-        </Button>
+                        <Button 
+                  onClick={handleSave} 
+                  disabled={isSaving || isLoading} 
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  {isSaving ? 'Saving...' : 'Save'}
+                </Button>
 
         {saveSuccess && (
           <span className={`flex items-center text-green-500 font-semibold ml-4 transition-opacity duration-300 ease-in-out ${isFading ? 'opacity-0' : 'opacity-100'}`}>

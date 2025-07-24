@@ -257,7 +257,7 @@ export default function EditPage() {
                           disabled={heroTextSaving}
                           className="bg-green-600 hover:bg-green-700 text-white"
                         >
-                          {heroTextSaving ? 'Saving...' : 'Save Hero Text'}
+                          {heroTextSaving ? 'Saving...' : 'Save'}
                         </Button>
                         {heroTextSaved && (
                           <span className="text-green-600">Saved!</span>
@@ -296,7 +296,11 @@ export default function EditPage() {
                             disabled={aboutMeSaving}
                           />
                           <div className="flex items-center gap-4 pb-6">
-                            <Button onClick={saveAboutMe} disabled={aboutMeSaving}>
+                            <Button 
+                              onClick={saveAboutMe} 
+                              disabled={aboutMeSaving}
+                              className="bg-green-600 hover:bg-green-700 text-white"
+                            >
                               {aboutMeSaving ? 'Saving...' : 'Save'}
                             </Button>
                             {aboutMeSaved && (

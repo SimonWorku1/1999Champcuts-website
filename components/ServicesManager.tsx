@@ -432,9 +432,9 @@ export default function ServicesManager() {
               <div className="flex justify-end gap-2">
                 <Button
                   onClick={() => saveService(editingService)}
-                  className="bg-accent hover:bg-accent/90"
+                  className="bg-green-600 hover:bg-green-700 text-white"
                 >
-                  Save Service
+                  Save
                 </Button>
                 <Button
                   onClick={() => setEditingService(null)}
