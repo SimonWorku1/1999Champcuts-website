@@ -252,7 +252,11 @@ export default function EditPage() {
                         />
                       </div>
                       <div className="flex items-center gap-4">
-                        <Button onClick={saveHeroText} disabled={heroTextSaving}>
+                        <Button 
+                          onClick={saveHeroText} 
+                          disabled={heroTextSaving}
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                        >
                           {heroTextSaving ? 'Saving...' : 'Save Hero Text'}
                         </Button>
                         {heroTextSaved && (
