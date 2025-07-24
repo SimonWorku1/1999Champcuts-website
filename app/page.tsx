@@ -157,6 +157,10 @@ export default function Home() {
   const [aboutFeatures, setAboutFeatures] = useState<Array<{ icon: string; title: string; description: string }>>([]);
   const [aboutFeaturesLoading, setAboutFeaturesLoading] = useState(true);
 
+  // Hero text state
+  const [heroTitle, setHeroTitle] = useState('1999CHAMPCUTZ');
+  const [heroTagline, setHeroTagline] = useState('Premium barbershop experience with skilled professionals dedicated to perfecting your style');
+
   useEffect(() => {
     // Fetch About Me from Firestore
     const fetchAboutMe = async () => {
@@ -190,6 +194,19 @@ export default function Home() {
       }
     };
     fetchAboutFeatures();
+
+    // Fetch hero text
+    const fetchHeroText = async () => {
+      try {
+        const res = await fetch('/api/hero-text');
+        const data = await res.json();
+        setHeroTitle(data.title || '1999CHAMPCUTZ');
+        setHeroTagline(data.tagline || 'Premium barbershop experience with skilled professionals dedicated to perfecting your style');
+      } catch (err) {
+        console.error('Error fetching hero text:', err);
+      }
+    };
+    fetchHeroText();
   }, []);
 
   // Contact form validation
@@ -350,10 +367,10 @@ export default function Home() {
         {/* Centered Content */}
         <div className="relative z-20 h-full w-full flex flex-col items-center justify-center text-white text-center px-6">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-widest mb-6 drop-shadow-lg text-white">
-            1999CHAMPCUTZ
+            {heroTitle}
           </h1>
           <p className="text-xl md:text-2xl mb-8 max-w-2xl text-white/90">
-            Premium barbershop experience with skilled professionals dedicated to perfecting your style
+            {heroTagline}
           </p>
           <Button
             size="lg"

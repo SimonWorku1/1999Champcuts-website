@@ -63,6 +63,14 @@ export default function EditPage() {
   const [aboutMeError, setAboutMeError] = useState<string | null>(null);
   const [isFading, setIsFading] = useState(false);
 
+  // Hero text state
+  const [heroTitle, setHeroTitle] = useState('1999CHAMPCUTZ');
+  const [heroTagline, setHeroTagline] = useState('Premium barbershop experience with skilled professionals dedicated to perfecting your style');
+  const [heroTextLoading, setHeroTextLoading] = useState(true);
+  const [heroTextSaving, setHeroTextSaving] = useState(false);
+  const [heroTextSaved, setHeroTextSaved] = useState(false);
+  const [heroTextError, setHeroTextError] = useState<string | null>(null);
+
   // Add auto-fade for saved message
   useEffect(() => {
     if (aboutMeSaved) {
@@ -154,6 +162,44 @@ export default function EditPage() {
     }
   };
 
+  // Hero text functions
+  useEffect(() => {
+    const fetchHeroText = async () => {
+      setHeroTextLoading(true);
+      setHeroTextError(null);
+      try {
+        const res = await fetch('/api/hero-text');
+        const data = await res.json();
+        setHeroTitle(data.title || '1999CHAMPCUTZ');
+        setHeroTagline(data.tagline || 'Premium barbershop experience with skilled professionals dedicated to perfecting your style');
+      } catch (err) {
+        setHeroTextError('Could not load hero text');
+      } finally {
+        setHeroTextLoading(false);
+      }
+    };
+    fetchHeroText();
+  }, []);
+
+  const saveHeroText = async () => {
+    setHeroTextSaving(true);
+    setHeroTextError(null);
+    setHeroTextSaved(false);
+    try {
+      const res = await fetch('/api/hero-text', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: heroTitle, tagline: heroTagline }),
+      });
+      if (!res.ok) throw new Error('Failed to save');
+      setHeroTextSaved(true);
+    } catch (err) {
+      setHeroTextError('Could not save hero text');
+    } finally {
+      setHeroTextSaving(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -172,6 +218,51 @@ export default function EditPage() {
                 <Button onClick={handleSignOut} variant="outline">Sign Out</Button>
               </div>
               <div>
+                <div className="mb-8">
+                  <h2 className="text-2xl font-semibold mb-4">Hero Text Editor</h2>
+                  <p className="text-gray-600 mb-4">Edit the main title and tagline displayed on the homepage hero section.</p>
+                  {heroTextLoading ? (
+                    <div>Loading...</div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Main Title
+                        </label>
+                        <input
+                          type="text"
+                          value={heroTitle}
+                          onChange={(e) => setHeroTitle(e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg"
+                          placeholder="Enter main title"
+                          disabled={heroTextSaving}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Tagline
+                        </label>
+                        <textarea
+                          value={heroTagline}
+                          onChange={(e) => setHeroTagline(e.target.value)}
+                          className="w-full p-3 border border-gray-300 rounded-lg"
+                          rows={3}
+                          placeholder="Enter tagline"
+                          disabled={heroTextSaving}
+                        />
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <Button onClick={saveHeroText} disabled={heroTextSaving}>
+                          {heroTextSaving ? 'Saving...' : 'Save Hero Text'}
+                        </Button>
+                        {heroTextSaved && (
+                          <span className="text-green-600">Saved!</span>
+                        )}
+                        {heroTextError && <span className="text-red-500">{heroTextError}</span>}
+                      </div>
+                    </div>
+                  )}
+                </div>
                 <div className="mb-8">
                   <h2 className="text-2xl font-semibold mb-4">Slideshow Management</h2>
                   <p className="text-gray-600 mb-4">Upload, reorder, or delete media for the homepage slideshow.</p>
