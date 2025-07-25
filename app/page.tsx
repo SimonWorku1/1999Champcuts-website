@@ -372,12 +372,18 @@ export default function Home() {
           <p className="text-xl md:text-2xl mb-8 max-w-2xl text-white/90">
             {heroTagline}
           </p>
-          <Button
-            size="lg"
-            className="bg-accent hover:bg-accent/90 text-primary border-2 border-accent hover:border-accent/90 font-bold py-3 px-10 rounded-full text-lg mb-8 shadow-xl transition"
+          <a
+            href="https://app.thecut.co/barbers/1999champ"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            BOOK NOW
-          </Button>
+            <Button
+              size="lg"
+              className="bg-accent hover:bg-accent/90 text-primary border-2 border-accent hover:border-accent/90 font-bold py-3 px-10 rounded-full text-lg mb-8 shadow-xl transition"
+            >
+              BOOK NOW
+            </Button>
+          </a>
           <div className="flex gap-6 justify-center">
             <a
               href="https://www.instagram.com/1999champcutz/"
@@ -463,11 +469,17 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="absolute bottom-0 right-0 p-4 flex flex-col items-end">
-                  <Button
-                    className="bg-transparent hover:bg-accent text-accent hover:text-primary border-2 border-accent hover:border-accent/90 font-bold py-2 px-6 rounded-full text-sm shadow-md transition"
+                  <a
+                    href="https://app.thecut.co/barbers/1999champ"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    BOOK NOW
-                  </Button>
+                    <Button
+                      className="bg-transparent hover:bg-accent text-accent hover:text-primary border-2 border-accent hover:border-accent/90 font-bold py-2 px-6 rounded-full text-sm shadow-md transition"
+                    >
+                      BOOK NOW
+                    </Button>
+                  </a>
                 </div>
               </div>
             ))}
