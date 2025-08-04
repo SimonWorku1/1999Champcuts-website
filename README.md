@@ -1,9 +1,9 @@
 # 1999Champcuts Website
 Homepage:
-[https://1999-champcuts-website.vercel.app/](url)
+[www.1999champcutz.com](url)
 
 Edit Page (needs authentication):
-[https://1999-champcuts-website.vercel.app/edit](url)
+[www.1999champcutz.com/edit](url)
 
 
 
