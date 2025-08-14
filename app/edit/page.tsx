@@ -6,6 +6,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import SlideshowManager from '@/components/SlideshowManager';
 import ServicesManager from '@/components/ServicesManager';
 import AboutFeaturesManager from '@/components/AboutFeaturesManager';
+import MapManager from '@/components/MapManager';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
@@ -357,6 +358,14 @@ export default function EditPage() {
               <section id="edit-services" className="w-full py-12 bg-zinc-100 dark:bg-zinc-800">
                 <div className="container mx-auto px-4">
                   {/* Services content */}
+                </div>
+              </section>
+              {/* Map Section (Last) */}
+              <section id="edit-map" className="w-full py-12">
+                <div className="container mx-auto px-4">
+                  <div className="bg-white border border-zinc-200 rounded-lg shadow p-6">
+                    <MapManager />
+                  </div>
                 </div>
               </section>
             </>

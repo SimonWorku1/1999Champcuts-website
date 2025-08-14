@@ -288,6 +288,27 @@ export default function Home() {
     }
   };
 
+  // Location state
+  const [locationAddress, setLocationAddress] = useState('');
+  const [locationMapUrl, setLocationMapUrl] = useState('');
+
+  useEffect(() => {
+    const fetchLocation = async () => {
+      try {
+        const res = await fetch('/api/location');
+        if (!res.ok) throw new Error('Failed to fetch location');
+        const data = await res.json();
+        setLocationAddress(data.address || '');
+        setLocationMapUrl(data.mapEmbedUrl || '');
+      } catch (err) {
+        // Fallback to existing hardcoded defaults if API fails
+        setLocationAddress('1200 Contra Costa Blvd Unit H, Pleasant Hill, CA 94523');
+        setLocationMapUrl('https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3152.332792300145!2d-122.0607166846816!3d37.94797997975336!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x808560a9c8c0c3c1%3A0x1a3c6c1c1c1c1c1c!2s1200%20Contra%20Costa%20Blvd%20Unit%20H%2C%20Pleasant%20Hill%2C%20CA%2094523!5e0!3m2!1sen!2sus!4v1620000000000!5m2!1sen!2sus');
+      }
+    };
+    fetchLocation();
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* EDIT BUTTON - Top right corner */}
@@ -557,11 +578,11 @@ export default function Home() {
                 <div className="space-y-6">
                   <div className="flex items-center">
                     <MapPin className="w-6 h-6 text-accent mr-4" />
-                    <p>1200 Contra Costa Blvd Unit H, Pleasant Hill, CA 94523</p>
+                    <p>{locationAddress || '1200 Contra Costa Blvd Unit H, Pleasant Hill, CA 94523'}</p>
                   </div>
                   <div className="mt-4 w-full">
                     <iframe
-                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3152.332792300145!2d-122.0607166846816!3d37.94797997975336!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x808560a9c8c0c3c1%3A0x1a3c6c1c1c1c1c1c!2s1200%20Contra%20Costa%20Blvd%20Unit%20H%2C%20Pleasant%20Hill%2C%20CA%2094523!5e0!3m2!1sen!2sus!4v1620000000000!5m2!1sen!2sus"
+                      src={locationMapUrl || 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3152.332792300145!2d-122.0607166846816!3d37.94797997975336!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x808560a9c8c0c3c1%3A0x1a3c6c1c1c1c1c1c!2s1200%20Contra%20Costa%20Blvd%20Unit%20H%2C%20Pleasant%20Hill%2C%20CA%2094523!5e0!3m2!1sen!2sus!4v1620000000000!5m2!1sen!2sus'}
                       width="100%"
                       height="300"
                       style={{ border: 0, borderRadius: '0.5rem' }}
