@@ -7,6 +7,7 @@ import SlideshowManager from '@/components/SlideshowManager';
 import ServicesManager from '@/components/ServicesManager';
 import AboutFeaturesManager from '@/components/AboutFeaturesManager';
 import MapManager from '@/components/MapManager';
+import ContactInfoManager from '@/components/ContactInfoManager';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
@@ -360,10 +361,14 @@ export default function EditPage() {
                   {/* Services content */}
                 </div>
               </section>
-              {/* Map Section (Last) */}
-              <section id="edit-map" className="w-full py-12">
+              {/* Contact & Location (Last) */}
+              <section id="edit-contact-location" className="w-full py-12">
                 <div className="container mx-auto px-4">
                   <div className="bg-white border border-zinc-200 rounded-lg shadow p-6">
+                    <h2 className="text-2xl font-semibold mb-4">Contact & Location</h2>
+                    <div className="mb-8">
+                      <ContactInfoManager />
+                    </div>
                     <MapManager />
                   </div>
                 </div>

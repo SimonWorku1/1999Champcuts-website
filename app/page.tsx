@@ -309,6 +309,29 @@ export default function Home() {
     fetchLocation();
   }, []);
 
+  // Contact info state
+  const [contactEmail, setContactEmail] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
+  const [contactHours, setContactHours] = useState<{ weekday: string; saturday: string; sunday: string }>({ weekday: '', saturday: '', sunday: '' });
+
+  useEffect(() => {
+    const fetchContactInfo = async () => {
+      try {
+        const res = await fetch('/api/contact-info');
+        if (!res.ok) throw new Error('Failed to fetch contact info');
+        const data = await res.json();
+        setContactEmail(data.email || 'yeisonpablocalmo@gmail.com');
+        setContactPhone(data.phone || '(510) 355-2039');
+        setContactHours(data.hours || { weekday: 'Monday - Friday: 9am - 8pm', saturday: 'Saturday: 10am - 6pm', sunday: 'Sunday: Closed' });
+      } catch (e) {
+        setContactEmail('yeisonpablocalmo@gmail.com');
+        setContactPhone('(510) 355-2039');
+        setContactHours({ weekday: 'Monday - Friday: 9am - 8pm', saturday: 'Saturday: 10am - 6pm', sunday: 'Sunday: Closed' });
+      }
+    };
+    fetchContactInfo();
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* EDIT BUTTON - Top right corner */}
@@ -594,20 +617,20 @@ export default function Home() {
                   </div>
                   <div className="flex items-center">
                     <Mail className="w-6 h-6 text-accent mr-4" />
-                    <p>yeisonpablocalmo@gmail.com</p>
+                    <p>{contactEmail || 'yeisonpablocalmo@gmail.com'}</p>
                   </div>
                   <div className="flex items-center">
                     <Clock className="w-6 h-6 text-accent mr-4" />
                     <div>
                       <p className="font-bold">Opening Hours:</p>
-                      <p>Monday - Friday: 9am - 8pm</p>
-                      <p>Saturday: 10am - 6pm</p>
-                      <p>Sunday: Closed</p>
+                      <p>{contactHours.weekday || 'Monday - Friday: 9am - 8pm'}</p>
+                      <p>{contactHours.saturday || 'Saturday: 10am - 6pm'}</p>
+                      <p>{contactHours.sunday || 'Sunday: Closed'}</p>
                     </div>
                   </div>
                   <div className="flex items-center">
                     <Phone className="w-6 h-6 text-accent mr-4" />
-                    <p>(510) 355-2039</p>
+                    <p>{contactPhone || '(510) 355-2039'}</p>
                   </div>
                 </div>
 

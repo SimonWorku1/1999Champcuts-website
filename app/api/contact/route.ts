@@ -72,9 +72,22 @@ export async function POST(request: Request) {
   const { name, email, message } = await request.json();
 
   try {
+    // Fetch dynamic recipient email from settings/contactInfo
+    let recipient = process.env.EMAIL_FALLBACK_TO || 'Yeisonpablocalmo@gmail.com';
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/contact-info`, { cache: 'no-cache' });
+      if (response.ok) {
+        const data = await response.json();
+        if (data && typeof data.email === 'string' && data.email.length > 0) {
+          recipient = data.email;
+        }
+      }
+    } catch (e) {
+      // If fetching fails, use fallback
+    }
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
-      to: 'Yeisonpablocalmo@gmail.com', // Your email address
+      to: recipient, // Dynamic recipient from settings
       subject: `New message from ${name}`,
       text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`,
     });
